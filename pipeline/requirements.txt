@@ -1,0 +1,5 @@
+scrapy
+scrapyd-client
+boto
+demjson
+python-dateutil

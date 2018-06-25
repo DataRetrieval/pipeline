@@ -1,0 +1,31 @@
+version: '2'
+services:
+    scrapyd:
+        build: ./scrapyd
+        hostname: scrapyd
+        ports:
+            - 6800:6800
+        volumes:
+            - scrapyd:/var/lib/scrapyd/
+        restart: always
+    spiderkeeper:
+        build: ./spiderkeeper
+        hostname: spiderkeeper
+        ports:
+            - 5000:5000
+        environment:
+            SERVER: http://scrapyd:6800
+        volumes:
+            - spiderkeeper:/var/lib/spiderkeeper
+        external_links:
+            - scrapyd
+        restart: always
+    pipeline:
+        build: ./pipeline
+        hostname: pipeline
+        external_links:
+            - scrapyd
+            - spiderkeeper
+volumes:
+    scrapyd:
+    spiderkeeper:
