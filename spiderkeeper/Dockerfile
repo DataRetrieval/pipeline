@@ -1,22 +1,23 @@
-FROM python:2
+FROM python:2-alpine
 
 MAINTAINER Ouahib El Hanchi <ouahib.el.hanchi@gmail.com>
 
-RUN pip install spiderkeeper
+RUN pip install --no-cache-dir spiderkeeper
 
-ENV HOST ${HOST:-0.0.0.0}
-ENV PORT ${PORT:-5000}
-ENV USER ${USER:-admin}
-ENV PASS ${PASS:-admin}
-ENV SERVER ${SERVER:-http://localhost:6800}
-ENV DATABASE_URL ${DATABASE_URL:-sqlite:////var/lib/spiderkeeper/data.db}
+ENV SPIDERKEEPER_HOST ${SPIDERKEEPER_HOST:-0.0.0.0}
+ENV SPIDERKEEPER_PORT ${SPIDERKEEPER_PORT:-5000}
+ENV SPIDERKEEPER_USERNAME ${SPIDERKEEPER_USERNAME:-admin}
+ENV SPIDERKEEPER_PASSWORD ${SPIDERKEEPER_PASSWORD:-admin}
+ENV SCRAPYD_SERVER ${SCRAPYD_SERVER:-http://localhost:6800}
+ENV SPIDERKEEPER_DATABASE_URL ${SPIDERKEEPER_DATABASE_URL:-sqlite:////var/lib/spiderkeeper/data.db}
+ENV TZ ${TZ:-UTC}
 
-EXPOSE ${PORT}
+EXPOSE ${SPIDERKEEPER_PORT}
 
 ENTRYPOINT spiderkeeper \
-    --host=$HOST \
-    --port=$PORT \
-    --username=$USER \
-    --password=$PASS \
-    --server=$SERVER \
-    --database-url=$DATABASE_URL
+    --host=$SPIDERKEEPER_HOST \
+    --port=$SPIDERKEEPER_PORT \
+    --username=$SPIDERKEEPER_USERNAME \
+    --password=$SPIDERKEEPER_PASSWORD \
+    --server=$SCRAPYD_SERVER \
+    --database-url=$SPIDERKEEPER_DATABASE_URL
