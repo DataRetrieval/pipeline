@@ -7,6 +7,13 @@ services:
             - 6800:6800
         volumes:
             - scrapyd:/var/lib/scrapyd/
+        environment:
+            HTTP_PROXY: http://proxy:8118
+            HTTPS_PROXY: http://proxy:8118
+            AWS_ACCESS_KEY_ID:
+            AWS_SECRET_ACCESS_KEY:
+            FEED_URI: s3://provens3/%(name)s/%(time)s.jl
+            FEED_FORMAT: jsonlines
         restart: always
     spiderkeeper:
         build: ./spiderkeeper
@@ -14,18 +21,33 @@ services:
         ports:
             - 5000:5000
         environment:
-            SERVER: http://scrapyd:6800
+            SPIDERKEEPER_USERNAME: admin
+            SPIDERKEEPER_PASSWORD: admin
+            SCRAPYD_SERVER: http://scrapyd:6800
         volumes:
             - spiderkeeper:/var/lib/spiderkeeper
-        external_links:
+        links:
             - scrapyd
+        restart: always
+    proxy:
+        build: ./proxy
+        hostname: proxy
+        ports:
+            - 8118:8118
+            - 2090:2090
+        environment:
+            TOR_INSTANCES: 25
         restart: always
     pipeline:
         build: ./pipeline
         hostname: pipeline
-        external_links:
+        environment:
+            SPIDERKEEPER_USERNAME: admin
+            SPIDERKEEPER_PASSWORD: admin
+        links:
             - scrapyd
             - spiderkeeper
+            - proxy
 volumes:
     scrapyd:
     spiderkeeper:
