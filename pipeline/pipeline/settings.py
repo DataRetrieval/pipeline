@@ -9,6 +9,8 @@
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 
+import os
+
 BOT_NAME = 'pipeline'
 
 SPIDER_MODULES = ['pipeline.spiders']
@@ -46,8 +48,8 @@ RETRY_TIMES = 10
 
 HTTP_RETRY_CODES = [500, 502, 503, 504, 400, 403, 408]
 
-AWS_ACCESS_KEY_ID = ''
-AWS_SECRET_ACCESS_KEY = ''
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
-FEED_URI = 's3://provens3/%(name)s/%(time)s.jl'
-FEED_FORMAT = 'jsonlines'
+FEED_URI = os.getenv('FEED_URI', 's3://provens3/%(name)s/%(time)s.jl')
+FEED_FORMAT = os.getenv('FEED_FORMAT', 'jsonlines')
