@@ -12,6 +12,16 @@ for line in sys.stdin:
 endef
 export PRINT_HELP_PYSCRIPT
 
+define DEPLOY_BASHSCRIPT
+	while ! curl -s "http://scrapyd:6800/"; do sleep 0.1; done
+	while ! curl -s "http://spiderkeeper:5000/"; do sleep 0.1; done
+	if ! curl -s http://scrapyd:6800/listprojects.json | grep -q '"pipeline"'; then
+		curl -u "${SPIDERKEEPER_USERNAME}:${SPIDERKEEPER_PASSWORD}" http://spiderkeeper:5000/project/create -d "project_name=pipeline"
+	fi
+	curl -u "${SPIDERKEEPER_USERNAME}:${SPIDERKEEPER_PASSWORD}" -F file=@output.egg http://spiderkeeper:5000/project/1/spider/upload
+endef
+export DEPLOY_BASHSCRIPT
+
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
@@ -22,10 +32,7 @@ build: clean ## Build egg
 	scrapyd-deploy --build-egg=output.egg
 
 deploy: build ## Deploy spiders
-	while ! curl -L -s "http://scrapyd:6800/"; do sleep 0.1; done
-	while ! curl -L -s "http://spiderkeeper:5000/"; do sleep 0.1; done
-	curl -vvv -L -u admin:admin -c /tmp/cookies -b /tmp/cookies "http://spiderkeeper:5000/project/create" -d "project_name=pipeline"
-	curl -vvv -L -u admin:admin -c /tmp/cookies -b /tmp/cookies -F "file=@output.egg" "http://spiderkeeper:5000/project/1/spider/upload"
+	@bash -c "$$DEPLOY_BASHSCRIPT"
 
 clean: clean-build clean-pyc ## remove all build and Python artifacts
 
