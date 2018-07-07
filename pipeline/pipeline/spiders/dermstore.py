@@ -42,9 +42,6 @@ class DermstoreProductsSpider(SitemapSpider):
         product_loader.add_xpath('atGlance', '//div[@id="collapseGlance"]')
         product = product_loader.load_item()
 
-        if 'price' not in product or not product['price']:
-            product['price'] = response.xpath('//script').re_first('"prod_price" : "([0-9.]+)"')
-
         # Extract product ID
         product_id = response.xpath('//script').re_first('prod_id: ([0-9]+)')
 
@@ -55,8 +52,8 @@ class DermstoreProductsSpider(SitemapSpider):
 
     def parse_reviews(self, response):
         """Extract reviews"""
-        product = response.meta['product']
-        product['reviews'] = product['reviews'] or []
+        product = response.meta.get('product') or {}
+        product['reviews'] = product.get('reviews') or []
 
         reviews_list = response.xpath('//div[@class="panel panel-default"]')
         for each in reviews_list:
