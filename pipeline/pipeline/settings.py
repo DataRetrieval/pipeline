@@ -33,10 +33,15 @@ DOWNLOAD_DELAY = 3
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
-COOKIES_ENABLED = False
+#COOKIES_ENABLED = True
 
 # Disable Telnet Console (enabled by default)
 TELNETCONSOLE_ENABLED = False
+
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
+}
 
 # Configure item pipelines
 ITEM_PIPELINES = {
@@ -46,7 +51,7 @@ ITEM_PIPELINES = {
 # Retry configuration
 RETRY_TIMES = 10
 
-HTTP_RETRY_CODES = [500, 502, 503, 504, 400, 403, 408]
+RETRY_HTTP_CODES = [500, 502, 503, 504, 400, 403, 408]
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')

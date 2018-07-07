@@ -1,5 +1,6 @@
 scrapy
 scrapyd-client
+scrapy-fake-useragent
 boto
 demjson
 python-dateutil
