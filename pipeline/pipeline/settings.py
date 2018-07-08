@@ -19,15 +19,16 @@ NEWSPIDER_MODULE = 'pipeline.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
+FAKEUSERAGENT_FALLBACK = USER_AGENT
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-CONCURRENT_REQUESTS = 16
+CONCURRENT_REQUESTS = int(os.getenv('CONCURRENT_REQUESTS', 16))
 
 # Configure a delay for requests for the same website (default: 0)
-DOWNLOAD_DELAY = 3
+DOWNLOAD_DELAY = float(os.getenv('DOWNLOAD_DELAY', 3))
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -49,12 +50,12 @@ ITEM_PIPELINES = {
 }
 
 # Retry configuration
-RETRY_TIMES = 10
+RETRY_TIMES = int(os.getenv('RETRY_TIMES', 10))
 
 RETRY_HTTP_CODES = [500, 502, 503, 504, 400, 403, 408]
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 
-FEED_URI = os.getenv('FEED_URI', 's3://provens3/%(name)s/%(time)s.jl')
+FEED_URI = os.getenv('FEED_URI')
 FEED_FORMAT = os.getenv('FEED_FORMAT', 'jsonlines')
