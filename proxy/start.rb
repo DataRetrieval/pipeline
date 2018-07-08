@@ -99,8 +99,8 @@ module Service
 
     def start
       super
-      compile_config("/usr/local/etc/torrc.erb", "/usr/local/etc/torrc.#{port}")
-      self.class.spawn(executable, "-f /usr/local/etc/torrc.#{port}")
+      compile_config('/etc/tor/torrc.erb', "/etc/tor/torrc.#{port}")
+      self.class.spawn(executable, "-f /etc/tor/torrc.#{port}")
     end
     
     def working?
@@ -132,13 +132,13 @@ module Service
 
     def start
       super
-      compile_config("/usr/local/etc/haproxy.cfg.erb", "/usr/local/etc/haproxy.cfg")
-      self.class.spawn(executable, "-f /usr/local/etc/haproxy.cfg")
+      compile_config('/etc/haproxy/haproxy.cfg.erb', '/etc/haproxy/haproxy.cfg')
+      self.class.spawn(executable, '-f /etc/haproxy/haproxy.cfg')
     end
 
     def add_backend(backend)
       @backends << {
-        name: backend.name, 
+        name: "#{backend.host}:#{backend.port}", 
         host: backend.host, 
         port: backend.port
       }
@@ -157,8 +157,8 @@ module Service
 
     def start
       super
-      compile_config("/usr/local/etc/privoxy.cfg.erb", "/usr/local/etc/privoxy.cfg")
-      self.class.spawn(executable, "--no-daemon", "/usr/local/etc/privoxy.cfg")
+      compile_config('/etc/privoxy/privoxy.cfg.erb', '/etc/privoxy/privoxy.cfg')
+      self.class.spawn(executable, "--no-daemon", '/etc/privoxy/privoxy.cfg')
     end
     
     def add_socks_proxy(socks_proxy)

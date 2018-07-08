@@ -128,7 +128,7 @@
 #          config file, because it is used while the config file is
 #          being read.
 #
-#user-manual https://www.privoxy.org/user-manual/
+user-manual /usr/share/doc/privoxy/user-manual/
 #
 #  1.2. trust-info-url
 #  ====================
@@ -260,7 +260,7 @@
 #
 #      No trailing "/", please.
 #
-confdir .
+confdir /etc/privoxy
 #
 #  2.2. templdir
 #  ==============
@@ -345,7 +345,7 @@ confdir .
 #
 #      No trailing "/", please.
 #
-logdir .
+logdir /var/log/privoxy
 #
 #  2.5. actionsfile
 #  =================
@@ -383,9 +383,9 @@ logdir .
 #      configuration for ad blocking, cookie management, privacy
 #      considerations, etc.
 #
-#actionsfile match-all.action # Actions that are applied to all sites and maybe overruled later on.
-#actionsfile default.action   # Main actions file
-#actionsfile user.action      # User customizations
+actionsfile match-all.action # Actions that are applied to all sites and maybe overruled later on.
+actionsfile default.action   # Main actions file
+actionsfile user.action      # User customizations
 #
 #  2.6. filterfile
 #  ================
@@ -429,8 +429,8 @@ logdir .
 #      It is recommended to place any locally adapted filters into a
 #      separate file, such as user.filter.
 #
-# filterfile default.filter
-# filterfile user.filter      # User customizations
+filterfile default.filter
+filterfile user.filter      # User customizations
 #
 #  2.7. logfile
 #  =============
@@ -478,7 +478,7 @@ logdir .
 #      require additional software to do it. For details, please
 #      refer to the documentation for your operating system.
 #
-logfile logfile
+logfile privoxy.log
 #
 #  2.8. trustfile
 #  ===============

@@ -6,9 +6,9 @@ RUN apk add --no-cache tor haproxy privoxy
 
 RUN gem install --no-ri --no-rdoc socksify
 
-COPY haproxy.cfg.erb /usr/local/etc/haproxy.cfg.erb
-COPY privoxy.cfg.erb /usr/local/etc/privoxy.cfg.erb
-COPY torrc.erb /usr/local/etc/torrc.erb
+COPY haproxy.cfg.erb /etc/haproxy/haproxy.cfg.erb
+COPY privoxy.cfg.erb /etc/privoxy/privoxy.cfg.erb
+COPY torrc.erb /etc/tor/torrc.erb
 
 COPY start.rb /usr/local/bin/start.rb
 RUN chmod +x /usr/local/bin/start.rb
