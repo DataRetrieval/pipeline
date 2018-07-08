@@ -76,9 +76,8 @@ class MakeupAlleyProductsSpider(scrapy.Spider):
             category = product.xpath('.//td[3]').extract_first()
 
             href = product.xpath('.//a[contains(@href, "/product/")]/@href').extract_first()
-            url = response.urljoin(href)
-            yield scrapy.Request(
-                url,
+            yield response.follow(
+                href,
                 callback=self.parse_product,
                 meta={'category': category, 'brand': brand,'dont_cache': True},
             )
@@ -88,9 +87,10 @@ class MakeupAlleyProductsSpider(scrapy.Spider):
         last_page = response.xpath('//li[@class="next next-pag"]/preceding-sibling::li[2]/a[@class="active"]')
         if not last_page and next_page:
             href = next_page.xpath('@href').extract_first()
-            url = response.urljoin(href)
-            yield scrapy.Request(
-                url, callback=self.parse_listing, meta={'dont_cache': True}
+            yield response.follow(
+                href,
+                callback=self.parse_listing,
+                meta={'dont_cache': True}
             )
 
     # -------------------------------------------------------------------------
@@ -146,9 +146,8 @@ class MakeupAlleyProductsSpider(scrapy.Spider):
         last_page = response.xpath('//li[@class="next next-pag"]/preceding-sibling::li[2]/a[@class="active"]')
         if not last_page and next_page:
             href = next_page.xpath('@href').extract_first()
-            url = response.urljoin(href)
-            yield scrapy.Request(
-                url,
+            yield response.follow(
+                href,
                 callback=self.parse_product,
                 meta={'product': product, 'dont_cache': True},
             )
@@ -156,7 +155,7 @@ class MakeupAlleyProductsSpider(scrapy.Spider):
             # Parse user profiles if any
             # Start with first profile
             profile_url = product['reviews'][0]['reviewer']['profileUrl']
-            yield scrapy.Request(
+            yield response.follow(
                 profile_url,
                 callback=self.parse_profile,
                 meta={'product': product},
@@ -180,7 +179,7 @@ class MakeupAlleyProductsSpider(scrapy.Spider):
         next_review_idx = review_idx + 1
         if next_review_idx < product['reviewCount']:
             profile_url = product['reviews'][next_review_idx]['reviewer']['profileUrl']
-            yield scrapy.Request(
+            yield response.follow(
                 profile_url,
                 callback=self.parse_profile,
                 meta={
