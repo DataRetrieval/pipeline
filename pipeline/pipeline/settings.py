@@ -29,9 +29,12 @@ CONCURRENT_REQUESTS = int(os.getenv('CONCURRENT_REQUESTS', 16))
 
 # Configure a delay for requests for the same website (default: 0)
 DOWNLOAD_DELAY = float(os.getenv('DOWNLOAD_DELAY', 3))
+DOWNLOAD_TIMEOUT = float(os.getenv('DOWNLOAD_TIMEOUT', 180))
 # The download delay setting will honor only one of:
-#CONCURRENT_REQUESTS_PER_DOMAIN = 16
-#CONCURRENT_REQUESTS_PER_IP = 16
+CONCURRENT_REQUESTS_PER_DOMAIN = int(os.getenv('CONCURRENT_REQUESTS_PER_DOMAIN', 8))
+CONCURRENT_REQUESTS_PER_IP = int(os.getenv('CONCURRENT_REQUESTS_PER_IP', 0))
+
+CONCURRENT_ITEMS = int(os.getenv('CONCURRENT_ITEMS', 100))
 
 # Disable cookies (enabled by default)
 #COOKIES_ENABLED = True
@@ -52,7 +55,7 @@ ITEM_PIPELINES = {
 # Retry configuration
 RETRY_TIMES = int(os.getenv('RETRY_TIMES', 10))
 
-RETRY_HTTP_CODES = [500, 502, 503, 504, 400, 403, 408]
+RETRY_HTTP_CODES = [500, 502, 503, 504, 522, 524, 400, 403, 408]
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
