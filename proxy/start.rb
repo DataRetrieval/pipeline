@@ -6,7 +6,7 @@ require 'erb'
 require 'socksify/http'
 require 'logger'
 
-$logger = Logger.new(STDOUT, ENV['DEBUG'] ? Logger::DEBUG : Logger::INFO)
+$logger = Logger.new(STDOUT, Logger::DEBUG)
 
 module Service
   class Base
@@ -84,7 +84,7 @@ module Service
     attr_reader :max_circuit_dirtiness
     attr_reader :circuit_build_timeout
 
-    def initialize(host, port)
+    def initialize(host: '127.0.0.1', port: 9050)
       @host = host
       @port = port
       
@@ -113,7 +113,7 @@ module Service
     end
   end
 
-  class Haproxy < Base
+  class HAProxy < Base
     attr_reader :backends
     attr_reader :monitor_port
     attr_reader :monitor_username
@@ -172,10 +172,10 @@ end
 
 proxies = []
 
-haproxy = Service::Haproxy.new
-tor_instances = ENV['TOR_INSTANCES'] || 20
-1000.upto(1000 + tor_instances.to_i) do |port|
-  proxy = Service::Tor.new('127.0.0.1', port)
+haproxy = Service::HAProxy.new
+tor_instances = Integer(ENV['TOR_INSTANCES'] || 20)
+1000.upto(1000 + tor_instances) do |port|
+  proxy = Service::Tor.new(host: '127.0.0.1', port: port)
   haproxy.add_backend(proxy)
   proxy.start
   proxies << proxy
@@ -186,7 +186,7 @@ privoxy = Service::Privoxy.new
 privoxy.add_socks_proxy(haproxy)
 privoxy.start
 
-healthcheck_timeout = ENV['HEALTHCHECK_TIMOUT'] || 60
+healthcheck_timeout = Integer(ENV['HEALTHCHECK_TIMOUT'] || 60)
 sleep healthcheck_timeout
 loop do
   $logger.info "Testing proxies ..."
@@ -194,7 +194,7 @@ loop do
     $logger.info "Testing proxy #{proxy.host}:#{proxy.port} ..."
     proxy.restart unless proxy.working?
     $logger.info "Sleeping for #{tor_instances} seconds ..."
-    sleep Integer(tor_instances)
+    sleep tor_instances
   end
 
   $logger.info "Sleeping for #{healthcheck_timeout} seconds ..."
