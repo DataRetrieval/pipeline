@@ -5,3 +5,4 @@ scrapyd
 boto
 demjson
 python-dateutil
+envtpl
