@@ -1,0 +1,58 @@
+### SPIDERKEEPER ##############################################################
+
+SPIDERKEEPER_PORT=5000
+SPIDERKEEPER_USERNAME=admin
+SPIDERKEEPER_PASSWORD=admin
+SCRAPYD_SERVER=http://scrapyd:6800
+
+### SCRAPYD ###################################################################
+
+SCRAPYD_PORT=6800
+SCRAPYD_MAX_PROC=0
+SCRAPYD_MAX_PROC_PER_CPU=4
+SCRAPYD_POLL_INTERVAL=5
+SCRAPYD_KEEP_JOBS=5
+SCRAPYD_KEEP_FINISHED=100
+
+### SCRAPY ####################################################################
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+
+FEED_URI=s3://provens3/%(name)s/%(time)s.jl
+FEED_FORMAT=jsonlines
+
+CONCURRENT_REQUESTS=16
+CONCURRENT_REQUESTS_PER_DOMAIN=8
+CONCURRENT_REQUESTS_PER_IP=0
+
+CONCURRENT_ITEMS=100
+
+DOWNLOAD_DELAY=2
+DOWNLOAD_TIMEOUT=180
+
+HTTP_PROXY=http://proxy:8118
+HTTPS_PROXY=http://proxy:8118
+
+DNS_TIMEOUT=60
+
+RETRY_TIMES=25
+
+### PRIVOXY ###################################################################
+
+PRIVOXY_PORT=8118
+
+### HAPROXY ###################################################################
+
+HAPROXY_PORT=5566
+HAPROXY_MONITOR_PORT=2090
+HAPROXY_MONITOR_USERNAME=admin
+HAPROXY_MONITOR_PASSWORD=admin
+
+### TOR #######################################################################
+
+TOR_INSTANCES=25
+NEW_CIRCUIT_PERIOD=120
+MAX_CIRCUIT_DIRTINESS=600
+CIRCUIT_BUILD_TIMEOUT=60
+HEALTHCHECK_TIMOUT=60

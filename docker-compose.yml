@@ -1,49 +1,72 @@
-version: '2'
+version: '3'
 services:
     scrapyd:
         build: ./scrapyd
         hostname: scrapyd
         ports:
-            - 6800:6800
+            - ${SCRAPYD_PORT}:${SCRAPYD_PORT}
         volumes:
             - scrapyd:/var/lib/scrapyd/
         environment:
-            HTTP_PROXY: http://proxy:8118
-            HTTPS_PROXY: http://proxy:8118
-            AWS_ACCESS_KEY_ID:
-            AWS_SECRET_ACCESS_KEY:
-            FEED_URI: s3://provens3/%(name)s/%(time)s.jl
-            FEED_FORMAT: jsonlines
-        restart: always
+            SCRAPYD_PORT: ${SCRAPYD_PORT}
+            SCRAPYD_MAX_PROC: ${SCRAPYD_MAX_PROC}
+            SCRAPYD_MAX_PROC_PER_CPU: ${SCRAPYD_MAX_PROC_PER_CPU}
+            SCRAPYD_POLL_INTERVAL: ${SCRAPYD_POLL_INTERVAL}
+            SCRAPYD_KEEP_JOBS: ${SCRAPYD_KEEP_JOBS}
+            SCRAPYD_KEEP_FINISHED: ${SCRAPYD_KEEP_FINISHED}
+            HTTP_PROXY: ${HTTP_PROXY}
+            HTTPS_PROXY: ${HTTPS_PROXY}
+            AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+            AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+            FEED_URI: ${FEED_URI}
+            FEED_FORMAT: ${FEED_FORMAT}
+            CONCURRENT_REQUESTS: ${CONCURRENT_REQUESTS}
+            CONCURRENT_REQUESTS_PER_DOMAIN: ${CONCURRENT_REQUESTS_PER_DOMAIN}
+            CONCURRENT_REQUESTS_PER_IP: ${CONCURRENT_REQUESTS_PER_IP}
+            CONCURRENT_ITEMS: ${CONCURRENT_ITEMS}
+            DOWNLOAD_DELAY: ${DOWNLOAD_DELAY}
+            DOWNLOAD_TIMEOUT: ${DOWNLOAD_TIMEOUT}
+            DNS_TIMEOUT: ${DNS_TIMEOUT}
+            RETRY_TIMES: ${RETRY_TIMES}
+        restart: on-failure
     spiderkeeper:
         build: ./spiderkeeper
         hostname: spiderkeeper
         ports:
-            - 5000:5000
+            - ${SPIDERKEEPER_PORT}:${SPIDERKEEPER_PORT}
         environment:
-            SPIDERKEEPER_USERNAME: admin
-            SPIDERKEEPER_PASSWORD: admin
-            SCRAPYD_SERVER: http://scrapyd:6800
+            SPIDERKEEPER_PORT: ${SPIDERKEEPER_PORT}
+            SPIDERKEEPER_USERNAME: ${SPIDERKEEPER_USERNAME}
+            SPIDERKEEPER_PASSWORD: ${SPIDERKEEPER_PASSWORD}
+            SCRAPYD_SERVER: ${SCRAPYD_SERVER}
         volumes:
             - spiderkeeper:/var/lib/spiderkeeper
         links:
             - scrapyd
-        restart: always
+        restart: on-failure
     proxy:
         build: ./proxy
         hostname: proxy
         ports:
-            - 8118:8118
-            - 2090:2090
+            - ${HAPROXY_MONITOR_PORT}:${HAPROXY_MONITOR_PORT}
         environment:
-            TOR_INSTANCES: 25
-        restart: always
+            PRIVOXY_PORT: ${PRIVOXY_PORT}
+            HAPROXY_PORT: ${HAPROXY_PORT}
+            HAPROXY_MONITOR_PORT: ${HAPROXY_MONITOR_PORT}
+            HAPROXY_MONITOR_USERNAME: ${HAPROXY_MONITOR_USERNAME}
+            HAPROXY_MONITOR_PASSWORD: ${HAPROXY_MONITOR_PASSWORD}
+            TOR_INSTANCES: ${TOR_INSTANCES}
+            NEW_CIRCUIT_PERIOD: ${NEW_CIRCUIT_PERIOD}
+            MAX_CIRCUIT_DIRTINESS: ${MAX_CIRCUIT_DIRTINESS}
+            CIRCUIT_BUILD_TIMEOUT: ${CIRCUIT_BUILD_TIMEOUT}
+            HEALTHCHECK_TIMOUT: ${HEALTHCHECK_TIMOUT}
+        restart: on-failure
     pipeline:
         build: ./pipeline
         hostname: pipeline
         environment:
-            SPIDERKEEPER_USERNAME: admin
-            SPIDERKEEPER_PASSWORD: admin
+            SPIDERKEEPER_USERNAME: ${SPIDERKEEPER_USERNAME}
+            SPIDERKEEPER_PASSWORD: ${SPIDERKEEPER_PASSWORD}
         links:
             - scrapyd
             - spiderkeeper
