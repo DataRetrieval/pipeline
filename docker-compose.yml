@@ -18,16 +18,16 @@ services:
             HTTPS_PROXY: ${HTTPS_PROXY}
             AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
             AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
-            FEED_URI: ${FEED_URI}
-            FEED_FORMAT: ${FEED_FORMAT}
-            CONCURRENT_REQUESTS: ${CONCURRENT_REQUESTS}
-            CONCURRENT_REQUESTS_PER_DOMAIN: ${CONCURRENT_REQUESTS_PER_DOMAIN}
-            CONCURRENT_REQUESTS_PER_IP: ${CONCURRENT_REQUESTS_PER_IP}
-            CONCURRENT_ITEMS: ${CONCURRENT_ITEMS}
-            DOWNLOAD_DELAY: ${DOWNLOAD_DELAY}
-            DOWNLOAD_TIMEOUT: ${DOWNLOAD_TIMEOUT}
-            DNS_TIMEOUT: ${DNS_TIMEOUT}
-            RETRY_TIMES: ${RETRY_TIMES}
+            SCRAPY_FEED_URI: ${SCRAPY_FEED_URI}
+            SCRAPY_FEED_FORMAT: ${SCRAPY_FEED_FORMAT}
+            SCRAPY_CONCURRENT_REQUESTS: ${SCRAPY_CONCURRENT_REQUESTS}
+            SCRAPY_CONCURRENT_REQUESTS_PER_DOMAIN: ${SCRAPY_CONCURRENT_REQUESTS_PER_DOMAIN}
+            SCRAPY_CONCURRENT_REQUESTS_PER_IP: ${SCRAPY_CONCURRENT_REQUESTS_PER_IP}
+            SCRAPY_CONCURRENT_ITEMS: ${SCRAPY_CONCURRENT_ITEMS}
+            SCRAPY_DOWNLOAD_DELAY: ${SCRAPY_DOWNLOAD_DELAY}
+            SCRAPY_DOWNLOAD_TIMEOUT: ${SCRAPY_DOWNLOAD_TIMEOUT}
+            SCRAPY_DNS_TIMEOUT: ${SCRAPY_DNS_TIMEOUT}
+            SCRAPY_RETRY_TIMES: ${SCRAPY_RETRY_TIMES}
         restart: on-failure
     spiderkeeper:
         build: ./spiderkeeper
@@ -43,23 +43,43 @@ services:
             - spiderkeeper:/var/lib/spiderkeeper
         links:
             - scrapyd
+            - privoxy
         restart: on-failure
-    proxy:
-        build: ./proxy
-        hostname: proxy
+    tor:
+        build: ./tor
+        hostname: tor
+        environment:
+            TOR_HOST: ${TOR_HOST}
+            TOR_PORT_RANGE: ${TOR_PORT_RANGE}
+            TOR_NEW_CIRCUIT_PERIOD: ${TOR_NEW_CIRCUIT_PERIOD}
+            TOR_MAX_CIRCUIT_DIRTINESS: ${TOR_MAX_CIRCUIT_DIRTINESS}
+            TOR_CIRCUIT_BUILD_TIMEOUT: ${TOR_CIRCUIT_BUILD_TIMEOUT}
+            TOR_HEALTHCHECK_TIMOUT: ${TOR_HEALTHCHECK_TIMOUT}
+        restart: on-failure
+    haproxy:
+        build: ./haproxy
+        hostname: haproxy
         ports:
+            - ${HAPROXY_PORT}:${HAPROXY_PORT}
             - ${HAPROXY_MONITOR_PORT}:${HAPROXY_MONITOR_PORT}
         environment:
-            PRIVOXY_PORT: ${PRIVOXY_PORT}
             HAPROXY_PORT: ${HAPROXY_PORT}
             HAPROXY_MONITOR_PORT: ${HAPROXY_MONITOR_PORT}
             HAPROXY_MONITOR_USERNAME: ${HAPROXY_MONITOR_USERNAME}
             HAPROXY_MONITOR_PASSWORD: ${HAPROXY_MONITOR_PASSWORD}
-            TOR_INSTANCES: ${TOR_INSTANCES}
-            NEW_CIRCUIT_PERIOD: ${NEW_CIRCUIT_PERIOD}
-            MAX_CIRCUIT_DIRTINESS: ${MAX_CIRCUIT_DIRTINESS}
-            CIRCUIT_BUILD_TIMEOUT: ${CIRCUIT_BUILD_TIMEOUT}
-            HEALTHCHECK_TIMOUT: ${HEALTHCHECK_TIMOUT}
+            HAPROXY_BALANCE_ALGORITHM: ${HAPROXY_BALANCE_ALGORITHM}
+        restart: on-failure
+    privoxy:
+        build: ./privoxy
+        hostname: privoxy
+        environment:
+            PRIVOXY_PORT: ${PRIVOXY_PORT}
+            PRIVOXY_FORWARD_SOCKS: ${PRIVOXY_FORWARD_SOCKS}
+            PRIVOXY_FORWARD_HTTP: ${PRIVOXY_FORWARD_HTTP}
+        ports:
+            - ${PRIVOXY_PORT}:${PRIVOXY_PORT}
+        links:
+            - haproxy
         restart: on-failure
     pipeline:
         build: ./pipeline
@@ -68,9 +88,7 @@ services:
             SPIDERKEEPER_USERNAME: ${SPIDERKEEPER_USERNAME}
             SPIDERKEEPER_PASSWORD: ${SPIDERKEEPER_PASSWORD}
         links:
-            - scrapyd
             - spiderkeeper
-            - proxy
 volumes:
     scrapyd:
     spiderkeeper:
