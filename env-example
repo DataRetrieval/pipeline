@@ -1,5 +1,18 @@
+### General ###################################################################
+
+TIMEZONE=UTC
+
+HTTP_PROXY=http://privoxy:8118
+HTTPS_PROXY=http://privoxy:8118
+
+### AWS #######################################################################
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+
 ### SPIDERKEEPER ##############################################################
 
+SPIDERKEEPER_HOST=spiderkeeper
 SPIDERKEEPER_PORT=5000
 SPIDERKEEPER_USERNAME=admin
 SPIDERKEEPER_PASSWORD=admin
@@ -7,6 +20,7 @@ SCRAPYD_SERVER=http://scrapyd:6800
 
 ### SCRAPYD ###################################################################
 
+SCRAPYD_HOST=scrapyd
 SCRAPYD_PORT=6800
 SCRAPYD_MAX_PROC=0
 SCRAPYD_MAX_PROC_PER_CPU=4
@@ -16,43 +30,39 @@ SCRAPYD_KEEP_FINISHED=100
 
 ### SCRAPY ####################################################################
 
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-
-FEED_URI=s3://provens3/%(name)s/%(time)s.jl
-FEED_FORMAT=jsonlines
-
-CONCURRENT_REQUESTS=16
-CONCURRENT_REQUESTS_PER_DOMAIN=8
-CONCURRENT_REQUESTS_PER_IP=0
-
-CONCURRENT_ITEMS=100
-
-DOWNLOAD_DELAY=2
-DOWNLOAD_TIMEOUT=180
-
-HTTP_PROXY=http://proxy:8118
-HTTPS_PROXY=http://proxy:8118
-
-DNS_TIMEOUT=60
-
-RETRY_TIMES=25
+SCRAPY_FEED_URI=s3://provendatas3/%(name)s/%(time)s.jl
+SCRAPY_FEED_FORMAT=jsonlines
+SCRAPY_CONCURRENT_REQUESTS=16
+SCRAPY_CONCURRENT_REQUESTS_PER_DOMAIN=8
+SCRAPY_CONCURRENT_REQUESTS_PER_IP=0
+SCRAPY_CONCURRENT_ITEMS=100
+SCRAPY_DOWNLOAD_DELAY=0
+SCRAPY_DOWNLOAD_TIMEOUT=180
+SCRAPY_DNS_TIMEOUT=60
+SCRAPY_RETRY_TIMES=100
 
 ### PRIVOXY ###################################################################
 
+PRIVOXY_HOST=privoxy
 PRIVOXY_PORT=8118
+#PRIVOXY_FORWARD_SOCKS=socks5://haproxy:5566
+PRIVOXY_FORWARD_SOCKS=
+PRIVOXY_FORWARD_HTTP=haproxy:5566
 
 ### HAPROXY ###################################################################
 
+HAPROXY_HOST=privoxy
 HAPROXY_PORT=5566
 HAPROXY_MONITOR_PORT=2090
 HAPROXY_MONITOR_USERNAME=admin
 HAPROXY_MONITOR_PASSWORD=admin
+HAPROXY_BALANCE_ALGORITHM=static-rr
 
 ### TOR #######################################################################
 
-TOR_INSTANCES=25
-NEW_CIRCUIT_PERIOD=120
-MAX_CIRCUIT_DIRTINESS=600
-CIRCUIT_BUILD_TIMEOUT=60
-HEALTHCHECK_TIMOUT=60
+TOR_HOST=tor
+TOR_PORT_RANGE=1000-1025
+TOR_NEW_CIRCUIT_PERIOD=120
+TOR_MAX_CIRCUIT_DIRTINESS=600
+TOR_CIRCUIT_BUILD_TIMEOUT=60
+TOR_HEALTHCHECK_TIMOUT=60
