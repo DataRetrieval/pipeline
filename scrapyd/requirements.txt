@@ -1,8 +1,0 @@
-scrapy
-scrapyd-client
-scrapy-fake-useragent
-scrapyd
-boto
-demjson
-python-dateutil
-envtpl

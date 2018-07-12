@@ -10,14 +10,14 @@ ENV SCRAPYD_POLL_INTERVAL ${SCRAPYD_POLL_INTERVAL:-5}
 ENV SCRAPYD_KEEP_JOBS ${SCRAPYD_KEEP_JOBS:-5} 
 ENV SCRAPYD_KEEP_FINISHED ${SCRAPYD_KEEP_FINISHED:-100}
 
-COPY requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir scrapy scrapyd-client \
+    scrapy-fake-useragent scrapyd boto demjson \
+    python-dateutil envtpl
 
-RUN pip install --no-cache-dir -r requirements.txt
+COPY scrapyd.conf.tpl /etc/scrapyd/
 
-COPY scrapyd.conf.tpl /etc/scrapyd/scrapyd.conf.tpl
-
-RUN envtpl < /etc/scrapyd/scrapyd.conf.tpl > /etc/scrapyd/scrapyd.conf
+COPY entrypoint.sh /usr/local/bin/
 
 EXPOSE ${SCRAPYD_PORT}
 
-ENTRYPOINT ["scrapyd", "--pidfile="]
+ENTRYPOINT ["entrypoint.sh"]
