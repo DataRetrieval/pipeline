@@ -21,6 +21,7 @@ setup(
     entry_points = {'scrapy': ['settings = pipeline.settings']},
     include_package_data=True,
     install_requires=[
+        'six',
         'scrapy',
         'scrapy-fake-useragent',
         'boto',

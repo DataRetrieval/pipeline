@@ -1,3 +1,4 @@
+six
 scrapy
 scrapyd-client
 scrapy-fake-useragent
