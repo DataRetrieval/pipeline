@@ -57,7 +57,7 @@ class SokoglamProductsSpider(SitemapSpider):
         product = product_loader.load_item()        
 
         appkey = response.xpath('//div[@data-appkey]/@data-appkey').extract_first()
-        yield self.build_reviews_request(product, appkey)
+        return self.build_reviews_request(product, appkey)
 
     # -------------------------------------------------------------------------
 
