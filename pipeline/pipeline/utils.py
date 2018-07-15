@@ -9,8 +9,13 @@ import datetime
 
 import six
 import dateutil.parser
-from scrapy.utils.python import to_unicode
+from parsel.utils import extract_regex
 from w3lib.html import remove_tags, replace_entities
+
+# =============================================================================
+
+INT_REGEX = re.compile(r'(?P<extract>[+-]?\d+)', re.UNICODE)
+FLOAT_REGEX = re.compile(r'(?P<extract>[+-]?(\d+([.]\d*)?|[.]\d+))', re.UNICODE)
 
 # =============================================================================
 
@@ -38,10 +43,15 @@ def parse_date(text):
 
 def parse_float(text):
     """Parse float numbers"""
+    if not isinstance(text, six.string_types):
+        return text
+        
     try:
-        if isinstance(text, six.string_types):
-            text = text.replace(',', '')
-        return float(text)
+        text = re.sub('[\s,]*', '', text)
+        return [
+            float(match)
+            for match in extract_regex(FLOAT_REGEX, text)
+        ]
     except ValueError:
         return None
 
@@ -49,10 +59,15 @@ def parse_float(text):
 
 def parse_int(text):
     """Parse integer numbers"""
+    if not isinstance(text, six.string_types):
+        return text
+        
     try:
-        if isinstance(text, six.string_types):
-            text = text.replace(',', '')
-        return int(text)
+        text = re.sub('[\s,]*', '', text)
+        return [
+            int(match)
+            for match in extract_regex(INT_REGEX, text)
+        ]
     except ValueError:
         return None
 
