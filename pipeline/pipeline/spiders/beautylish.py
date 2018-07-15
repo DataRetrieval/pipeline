@@ -64,22 +64,20 @@ class BeautylishProductsSpider(scrapy.Spider):
         product_loader.add_xpath('description', '//div[@id="desc-accord-content"]')
         product_loader.add_value('url', response.url)
         product = product_loader.load_item()
-        product['reviews'] = []
 
-        # Extract reviews if any, otherwise yield collected data
+        # Extract reviews if any, otherwise return collected data
         if product['reviewCount']:
             cipherid = data['ProductApp']['product']['cipheredId']
-            url = self.build_review_url(cipherid)
-            yield scrapy.Request(
-                url,
+            return scrapy.Request(
+                self.build_review_url(cipherid),
                 callback=self.parse_reviews,
                 meta={
                     'product': product,
                     'cipherid': cipherid,
                 }
             )
-        else:
-            yield product
+            
+        return product
 
     # -------------------------------------------------------------------------
 
@@ -89,6 +87,7 @@ class BeautylishProductsSpider(scrapy.Spider):
         cipherid = response.meta['cipherid']
         reviews = json.loads(response.body)
         if reviews:
+            product['reviews'] = product.get('reviews') or []
             for each in reviews:
                 # Extract review information
                 review_loader = ReviewItemLoader(ReviewItem())
@@ -109,16 +108,17 @@ class BeautylishProductsSpider(scrapy.Spider):
                 review['reviewer'] = reviewer
                 product['reviews'].append(review)
 
-            limit = 20
+            limit = response.meta.get('limit', 20)
             offset = response.meta.get('offset', 0) + limit
-            url = self.build_review_url(cipherid, offset)
+            sort = response.meta.get('sort', 'helpful')
             yield scrapy.Request(
-                url,
+                self.build_review_url(cipherid, offset, limit, sort),
                 callback=self.parse_reviews,
                 meta={
                     'product': product,
                     'cipherid': cipherid,
                     'offset': offset,
+                    'limit': limit
                 }
             )
         else:
@@ -127,16 +127,14 @@ class BeautylishProductsSpider(scrapy.Spider):
 
     # -------------------------------------------------------------------------
 
-    def build_review_url(self, cipherid, offset=0, limit=20):
+    def build_review_url(self, cipherid, offset=0, limit=20, sort='helpful'):
         """Build review url from cipherid"""
-        base_url = "https://www.beautylish.com/rest/reviews/p-{cipherid}".format(cipherid=cipherid)
         params = {
             'offset': offset,
             'limit': limit,
-            'sort': 'helpful'
+            'sort': sort
         }
         query = urllib.urlencode(params)
-        url = '{base_url}?{query}'.format(base_url=base_url, query=query)
-        return url
+        return 'https://www.beautylish.com/rest/reviews/p-{cipherid}?{query}'.format(cipherid=cipherid, query=query)
 
 # END =========================================================================
