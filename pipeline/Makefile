@@ -31,6 +31,9 @@ install: ## Install requirements
 build: clean ## Build egg
 	scrapyd-deploy --build-egg=output.egg
 
+test: ## Check spiders contracts
+	scrapy check
+
 deploy: build ## Deploy spiders
 	@bash -c "$$DEPLOY_BASHSCRIPT"
 
