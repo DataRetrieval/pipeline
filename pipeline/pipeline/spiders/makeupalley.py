@@ -8,7 +8,7 @@ import urllib
 import scrapy
 
 from pipeline.items.makeupalley import ProductItem, ReviewItem, ReviewerItem
-from pipeline.loaders.makeupalley import (
+from pipeline.itemloaders.makeupalley import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
 )
 
@@ -79,7 +79,11 @@ class MakeupAlleyProductsSpider(scrapy.Spider):
             yield response.follow(
                 href,
                 callback=self.parse_product,
-                meta={'category': category, 'brand': brand,'dont_cache': True},
+                meta={
+                    'category': category,
+                    'brand': brand,
+                    'dont_cache': True
+                }
             )
 
         # Follow next page stop until we have reached the last one

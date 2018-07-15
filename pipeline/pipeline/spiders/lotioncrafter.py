@@ -4,12 +4,11 @@
 
 # Imports =====================================================================
 
-import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
 from pipeline.items.lotioncrafter import ProductItem
-from pipeline.loaders.lotioncrafter import ProductItemLoader
+from pipeline.itemloaders.lotioncrafter import ProductItemLoader
 
 # Spider ======================================================================
 
@@ -55,5 +54,5 @@ class LotionCrafterProductsSpider(CrawlSpider):
         loader.add_xpath('disclaimer', '//div[@class="tabcontent"]//*[contains(., "Disclaimer")]/following-sibling::text()')
         loader.add_value('url', response.url)
         yield loader.load_item()
-        
+
 # END =========================================================================

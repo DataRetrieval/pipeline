@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Items"""
+"""Dermstore items"""
 
 # Imports =====================================================================
 
@@ -25,7 +25,7 @@ class ProductItem(scrapy.Item):
     ingredients = scrapy.Field()
     url = scrapy.Field()
     reviews = scrapy.Field()
-    
+
 # -----------------------------------------------------------------------------
 
 class ReviewItem(scrapy.Item):
@@ -34,7 +34,7 @@ class ReviewItem(scrapy.Item):
     description = scrapy.Field()
     rating = scrapy.Field()
     reviewer = scrapy.Field()
-    
+
 # -----------------------------------------------------------------------------
 
 class ReviewerItem(scrapy.Item):
@@ -46,5 +46,5 @@ class ReviewerItem(scrapy.Item):
     location = scrapy.Field()
     reviewDate = scrapy.Field()
     isVerifiedPurchaser = scrapy.Field()
-    
+
 # END =========================================================================

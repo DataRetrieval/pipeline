@@ -4,11 +4,9 @@
 
 # Imports =====================================================================
 
-import scrapy
-
 from scrapy.spiders import SitemapSpider
 from pipeline.items.skinstore import ProductItem, ReviewItem, ReviewerItem
-from pipeline.loaders.skinstore import (
+from pipeline.itemloaders.skinstore import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
 )
 
@@ -18,6 +16,7 @@ class SkinstoreProductsSpider(SitemapSpider):
     """Skinstore Products Spider"""
 
     name = "skinstore"
+    allowed_domains = ['skinstore.com']
     sitemap_urls = ['https://www.skinstore.com/sitemapindex-product.xml.gz']
     sitemap_rules = [('/[^/]+/[0-9]+.html', 'parse_product')]
 
@@ -61,10 +60,10 @@ class SkinstoreProductsSpider(SitemapSpider):
             reviewer_loader = ReviewerItemLoader(ReviewerItem(), each)
             reviewer_loader.add_xpath('username', './/span[@itemprop="author"]')
             reviewer = reviewer_loader.load_item()
-            
+
             review['reviewer'] = reviewer
             product['reviews'].append(review)
-            
+
         return product
 
 # END =========================================================================

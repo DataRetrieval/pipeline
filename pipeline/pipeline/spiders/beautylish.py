@@ -10,7 +10,7 @@ import urllib
 import scrapy
 
 from pipeline.items.beautylish import ProductItem, ReviewItem, ReviewerItem
-from pipeline.loaders.beautylish import (
+from pipeline.itemloaders.beautylish import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
 )
 

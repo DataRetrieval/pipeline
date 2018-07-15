@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Items"""
+"""LotionCrafter items"""
 
 # Imports =====================================================================
 
@@ -30,5 +30,5 @@ class ProductItem(scrapy.Item):
     shipping_info = scrapy.Field()
     disclaimer = scrapy.Field()
     url = scrapy.Field()
-    
+
 # END =========================================================================

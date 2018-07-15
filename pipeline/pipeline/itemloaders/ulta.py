@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Item Loaders"""
+"""Ulta item loaders"""
 
 # Imports =====================================================================
 
@@ -16,14 +16,16 @@ class ProductItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     default_input_processor = MapCompose(clean_text)
 
+    pros_out = Identity()
+    cons_out = Identity()
+    bestUses_out = Identity()
     category_out = Join(' > ')
-    images_out = Identity()
-    tags_out = Identity()
-    
+
     price_in = MapCompose(clean_text, parse_float)
+    size_in = MapCompose(clean_text, parse_float)
+    recommendationPercentage_in = MapCompose(clean_text, parse_int)
     reviewCount_in = MapCompose(clean_text, parse_int)
     rating_in = MapCompose(clean_text, parse_float)
-    inventoryQuantity_in = MapCompose(clean_text, parse_int)
 
 # -----------------------------------------------------------------------------
 
@@ -32,10 +34,12 @@ class ReviewItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     default_input_processor = MapCompose(clean_text)
 
+    pros_out = Identity()
+    cons_out = Identity()
+    bestUses_out = Identity()
+
     datePublished_in = MapCompose(clean_text, parse_date)
     rating_in = MapCompose(clean_text, parse_float)
-    upvotes_in = MapCompose(clean_text, parse_int)
-    downvotes_in = MapCompose(clean_text, parse_int)
 
 # -----------------------------------------------------------------------------
 
@@ -43,5 +47,8 @@ class ReviewerItemLoader(ItemLoader):
     """Reviewer item loader"""
     default_output_processor = TakeFirst()
     default_input_processor = MapCompose(clean_text)
+
+    skinType_out = Identity()
+    bio_out = Join(', ')
 
 # END =========================================================================

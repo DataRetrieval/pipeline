@@ -9,7 +9,7 @@ import scrapy
 
 from scrapy.spiders import SitemapSpider
 from pipeline.items.sokoglam import ProductItem, ReviewItem, ReviewerItem
-from pipeline.loaders.sokoglam import (
+from pipeline.itemloaders.sokoglam import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
 )
 
@@ -19,6 +19,7 @@ class SokoglamProductsSpider(SitemapSpider):
     """Sokoglam Products Spider"""
 
     name = "sokoglam"
+    allowed_domains = ['sokoglam.com']
     sitemap_urls = ['https://sokoglam.com/robots.txt']
     sitemap_rules = [('/products/', 'parse_product')]
     sitemap_follow = ['/sitemap_products']
@@ -67,7 +68,7 @@ class SokoglamProductsSpider(SitemapSpider):
         data = json.loads(response.body)
         content = scrapy.Selector(text=data[0]['result'])
         reviews = content.xpath('//div[@data-review-id]')
-        if len(reviews) > 0:
+        if reviews:
             for each in reviews:
                 # Extract review information
                 review_loader = ReviewItemLoader(ReviewItem(), each)

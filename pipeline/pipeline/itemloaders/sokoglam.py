@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-"""Item Loaders"""
+"""Sokoglam item loaders"""
 
 # Imports =====================================================================
 
 from scrapy.loader import ItemLoader
-from scrapy.loader.processors import TakeFirst, MapCompose, Join
-from w3lib.html import remove_tags, replace_entities
+from scrapy.loader.processors import TakeFirst, MapCompose, Join, Identity
 
 from pipeline.utils import clean_text, parse_float, parse_int, parse_date
 
@@ -18,10 +17,13 @@ class ProductItemLoader(ItemLoader):
     default_input_processor = MapCompose(clean_text)
 
     category_out = Join(' > ')
+    images_out = Identity()
+    tags_out = Identity()
+
     price_in = MapCompose(clean_text, parse_float)
-    customersPurchased_in = MapCompose(clean_text, parse_int)
     reviewCount_in = MapCompose(clean_text, parse_int)
-    ratingValue_in = MapCompose(clean_text, parse_float)
+    rating_in = MapCompose(clean_text, parse_float)
+    inventoryQuantity_in = MapCompose(clean_text, parse_int)
 
 # -----------------------------------------------------------------------------
 
@@ -30,7 +32,10 @@ class ReviewItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     default_input_processor = MapCompose(clean_text)
 
+    datePublished_in = MapCompose(clean_text, parse_date)
     rating_in = MapCompose(clean_text, parse_float)
+    upvotes_in = MapCompose(clean_text, parse_int)
+    downvotes_in = MapCompose(clean_text, parse_int)
 
 # -----------------------------------------------------------------------------
 
@@ -38,7 +43,5 @@ class ReviewerItemLoader(ItemLoader):
     """Reviewer item loader"""
     default_output_processor = TakeFirst()
     default_input_processor = MapCompose(clean_text)
-
-    reviewDate_in = MapCompose(clean_text, parse_date)
 
 # END =========================================================================

@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 
-"""Item Loaders"""
+"""Skinstore item loaders"""
 
 # Imports =====================================================================
 
 from scrapy.loader import ItemLoader
 from scrapy.loader.processors import TakeFirst, MapCompose, Join
-from w3lib.html import remove_tags, replace_entities
 
-from pipeline.utils import clean_text, parse_float, parse_int, parse_date
+from pipeline.utils import clean_text, parse_date, parse_float, parse_int
 
 # Loaders =====================================================================
 
@@ -20,7 +19,7 @@ class ProductItemLoader(ItemLoader):
     category_out = Join(' > ')
     price_in = MapCompose(clean_text, parse_float)
     reviewCount_in = MapCompose(clean_text, parse_int)
-    rating_in = MapCompose(clean_text, parse_float)
+    ratingValue_in = MapCompose(clean_text, parse_float)
 
 # -----------------------------------------------------------------------------
 
@@ -29,9 +28,10 @@ class ReviewItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     default_input_processor = MapCompose(clean_text)
 
-    helpfulCount_in = MapCompose(clean_text, parse_int)
-    datePublished_in = MapCompose(clean_text, parse_date)
+    upVotes_in = MapCompose(clean_text, parse_int)
+    downVotes_in = MapCompose(clean_text, parse_int)
     rating_in = MapCompose(clean_text, parse_float)
+    datePublished_in = MapCompose(clean_text, parse_date)
 
 # -----------------------------------------------------------------------------
 

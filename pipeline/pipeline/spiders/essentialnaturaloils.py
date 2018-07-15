@@ -9,7 +9,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
 from pipeline.items.essentialnaturaloils import ProductItem, ReviewItem
-from pipeline.loaders.essentialnaturaloils import (
+from pipeline.itemloaders.essentialnaturaloils import (
     ProductItemLoader, ReviewItemLoader
 )
 
@@ -65,7 +65,7 @@ class EssentialNaturalOilsProductsSpider(CrawlSpider):
         loader.add_xpath('options', '//select/option[position() > 1]')
         loader.add_css('image', '#image::attr(src)')
         loader.add_xpath('rating', 'count(//div[@class="review"]//i[@class="fa fa-star fa-stack-1x"])')
-        loader.add_css('reviews_count', '.review', re='(\d+) reviews')
+        loader.add_css('reviews_count', '.review', re=r'(\d+) reviews')
         loader.add_value('url', response.url)
         product = loader.load_item()
 

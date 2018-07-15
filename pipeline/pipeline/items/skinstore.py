@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Items"""
+"""Skinstore items"""
 
 # Imports =====================================================================
 
@@ -19,7 +19,7 @@ class ProductItem(scrapy.Item):
     image = scrapy.Field()
     category = scrapy.Field()
     condition = scrapy.Field()
-    availability =  scrapy.Field()
+    availability = scrapy.Field()
     reviewCount = scrapy.Field()
     ratingValue = scrapy.Field()
     starReviewsCounts = scrapy.Field()
@@ -30,7 +30,7 @@ class ProductItem(scrapy.Item):
     size = scrapy.Field()
     url = scrapy.Field()
     reviews = scrapy.Field()
-    
+
 # -----------------------------------------------------------------------------
 
 class ReviewItem(scrapy.Item):
@@ -42,11 +42,11 @@ class ReviewItem(scrapy.Item):
     upVotes = scrapy.Field()
     downVotes = scrapy.Field()
     reviewer = scrapy.Field()
-    
+
 # -----------------------------------------------------------------------------
 
 class ReviewerItem(scrapy.Item):
     """Reviewer item"""
     username = scrapy.Field()
-    
+
 # END =========================================================================

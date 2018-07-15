@@ -10,7 +10,7 @@ import scrapy
 
 from scrapy.spiders import SitemapSpider
 from pipeline.items.ulta import ProductItem, ReviewItem, ReviewerItem
-from pipeline.loaders.ulta import (
+from pipeline.itemloaders.ulta import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
 )
 
@@ -20,6 +20,7 @@ class UltaProductsSpider(SitemapSpider):
     """Ulta Products Spider"""
 
     name = "ulta"
+    allowed_domains = ['ulta.com']
     sitemap_urls = ['http://www.ulta.com/robots.txt']
     sitemap_follow = ['/detail[0-9]+.xml']
     sitemap_rules = [('product', 'parse_product')]
@@ -102,7 +103,7 @@ class UltaProductsSpider(SitemapSpider):
             # Collect more reviews if any
             page = response.meta['page'] + 1
             yield self.build_reviews_request(product, page)
-                
+
     # -------------------------------------------------------------------------
 
     def build_reviews_request(self, product, page=1):

@@ -9,7 +9,7 @@ import scrapy
 
 from scrapy.spiders import SitemapSpider
 from pipeline.items.sephora import ProductItem, ReviewItem, ReviewerItem
-from pipeline.loaders.sephora import (
+from pipeline.itemloaders.sephora import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
 )
 
@@ -19,6 +19,7 @@ class SephoraProductsSpider(SitemapSpider):
     """Sephora Products Spider"""
 
     name = "sephora"
+    allowed_domains = ['sephora.com']
     sitemap_urls = ['http://www.sephora.com/products-sitemap.xml']
 
     # -------------------------------------------------------------------------
@@ -61,6 +62,7 @@ class SephoraProductsSpider(SitemapSpider):
     # -------------------------------------------------------------------------
 
     def parse_reviews(self, response):
+        """Extract reviews"""
         product = response.meta['product']
         product['reviews'] = product['reviews'] or []
         reviews_list = response.xpath('//span[@itemprop="review"]')

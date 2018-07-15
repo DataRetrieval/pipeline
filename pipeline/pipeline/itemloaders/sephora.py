@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-"""Item Loaders"""
+"""Sephora item loaders"""
 
 # Imports =====================================================================
 
 from scrapy.loader import ItemLoader
-from scrapy.loader.processors import TakeFirst, MapCompose, Join, Identity
+from scrapy.loader.processors import TakeFirst, MapCompose, Join
 
 from pipeline.utils import (
     clean_text, parse_date, parse_int, parse_float, parse_bool
@@ -18,17 +18,12 @@ class ProductItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     default_input_processor = MapCompose(clean_text)
 
-    keyIngredients_out = Identity()
-    research_out = Identity()
-    pros_out = Identity()
-    cons_out = Identity()
-    bestUses_out = Identity()
-    
-    price_out = Identity()
-    quantity_out = Identity()
-    
-    price_in = MapCompose(clean_text, parse_float)
-    recommendationPercentage_in = MapCompose(clean_text, parse_int)
+    category_out = Join(' > ')
+    shipping_out = Join('\n')
+    sephoraExclusive_in = MapCompose(clean_text, parse_bool)
+    listPrice_in = MapCompose(clean_text, parse_float)
+    valuePrice_in = MapCompose(clean_text, parse_float)
+    loveCount_in = MapCompose(clean_text, parse_int)
     reviewCount_in = MapCompose(clean_text, parse_int)
     rating_in = MapCompose(clean_text, parse_float)
 
@@ -39,11 +34,7 @@ class ReviewItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     default_input_processor = MapCompose(clean_text)
 
-    pros_out = Identity()
-    cons_out = Identity()
-    bestUses_out = Identity()
-    
-    datePublished_in = MapCompose(clean_text, parse_date)
+    publishedAt_in = MapCompose(clean_text, parse_date)
     rating_in = MapCompose(clean_text, parse_float)
 
 # -----------------------------------------------------------------------------
@@ -53,7 +44,6 @@ class ReviewerItemLoader(ItemLoader):
     default_output_processor = TakeFirst()
     default_input_processor = MapCompose(clean_text)
 
-    skinType_out = Identity()
-    bio_out = Join(', ')
-    
+    reviewDate_in = MapCompose(clean_text, parse_date)
+
 # END =========================================================================

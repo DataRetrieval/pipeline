@@ -8,7 +8,7 @@ import scrapy
 
 from scrapy.spiders import SitemapSpider
 from pipeline.items.dermstore import ProductItem, ReviewItem, ReviewerItem
-from pipeline.loaders.dermstore import (
+from pipeline.itemloaders.dermstore import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
 )
 
@@ -18,6 +18,7 @@ class DermstoreProductsSpider(SitemapSpider):
     """Dermstore Products Spider"""
 
     name = "dermstore"
+    allowed_domains = ['dermstore.com']
     sitemap_urls = ['https://www.dermstore.com/robots.txt']
     sitemap_rules = [('/product_', 'parse_product')]
 

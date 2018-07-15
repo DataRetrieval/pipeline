@@ -10,7 +10,7 @@ import scrapy
 
 from scrapy.spiders import SitemapSpider
 from pipeline.items.paulaschoice import ProductItem, ReviewItem, ReviewerItem
-from pipeline.loaders.paulaschoice import (
+from pipeline.itemloaders.paulaschoice import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
 )
 
@@ -20,9 +20,10 @@ class PaulasChoiceProductsSpider(SitemapSpider):
     """Paula's Choice Products Spider"""
 
     name = "paulaschoice"
+    allowed_domains = ['paulaschoice.com']
     sitemap_urls = ['http://www.paulaschoice.com/robots.txt']
     sitemap_rules = [('/[^/]+/[0-9]+.html', 'parse_product')]
-    
+
     # -------------------------------------------------------------------------
 
     def parse_product(self, response):
@@ -56,7 +57,7 @@ class PaulasChoiceProductsSpider(SitemapSpider):
 
         # Collect reviews if any, otherwise yield collected data
         yield product if not product['reviewCount'] else self.build_reviews_request(product)
-        
+
     # -------------------------------------------------------------------------
 
     def parse_reviews(self, response):
@@ -95,9 +96,9 @@ class PaulasChoiceProductsSpider(SitemapSpider):
             yield self.build_reviews_request(product, page)
         else:
             yield product
-     
+
     # -------------------------------------------------------------------------
-    
+
     def build_reviews_request(self, product, page=1):
         """Build request to collect reviews"""
         pid = product['sku'].split('-')[0]
@@ -112,9 +113,9 @@ class PaulasChoiceProductsSpider(SitemapSpider):
                 'page': page
             }
         )
-        
+
     # -------------------------------------------------------------------------
-    
+
     @staticmethod
     def encode_pid(pid):
         """Encodes PID according to Paula's choice algorithm"""
@@ -136,5 +137,5 @@ class PaulasChoiceProductsSpider(SitemapSpider):
             except AttributeError:
                 pass
         return None
-        
+
 # END =========================================================================

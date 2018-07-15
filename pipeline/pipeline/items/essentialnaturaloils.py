@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Items"""
+"""EssentialNaturalOils items"""
 
 # Imports =====================================================================
 
@@ -27,6 +27,7 @@ class ProductItem(scrapy.Item):
 # -----------------------------------------------------------------------------
 
 class ReviewItem(scrapy.Item):
+    """Review item"""
     name = scrapy.Field()
     date = scrapy.Field()
     text = scrapy.Field()

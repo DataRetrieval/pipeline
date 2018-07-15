@@ -4,7 +4,6 @@
 
 # Pipelines ===================================================================
 
-
 class StarReviewsCounterPipeline(object):
     """Star reviews counter pipeline"""
 

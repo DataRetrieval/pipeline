@@ -12,7 +12,7 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
 from pipeline.items.glossier import ProductItem, ReviewItem, ReviewerItem
-from pipeline.loaders.glossier import (
+from pipeline.itemloaders.glossier import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
 )
 

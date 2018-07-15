@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-"""Items"""
+"""Glossier items"""
 
 # Imports =====================================================================
 
 import scrapy
 
 # Items =======================================================================
-
 
 class ProductItem(scrapy.Item):
     """Product item"""
@@ -38,7 +37,6 @@ class ProductItem(scrapy.Item):
 
 # -----------------------------------------------------------------------------
 
-
 class ReviewItem(scrapy.Item):
     """Review item"""
     comments = scrapy.Field()
@@ -52,7 +50,6 @@ class ReviewItem(scrapy.Item):
     reviewer = scrapy.Field()
 
 # -----------------------------------------------------------------------------
-
 
 class ReviewerItem(scrapy.Item):
     """Reviewer item"""

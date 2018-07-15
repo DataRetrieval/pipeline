@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""Items"""
+"""MakingCosmetics items"""
 
 # Imports =====================================================================
 
@@ -38,5 +38,5 @@ class ProductItem(scrapy.Item):
     gmo = scrapy.Field()
     vegan = scrapy.Field()
     url = scrapy.Field()
-    
+
 # END =========================================================================

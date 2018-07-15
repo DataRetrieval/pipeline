@@ -4,12 +4,11 @@
 
 # Imports =====================================================================
 
-import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
 from pipeline.items.makingcosmetics import ProductItem
-from pipeline.loaders.makingcosmetics import ProductItemLoader
+from pipeline.itemloaders.makingcosmetics import ProductItemLoader
 
 # Spider ======================================================================
 
@@ -65,5 +64,5 @@ class MakingCosmeticsProductsSpider(CrawlSpider):
         loader.add_xpath('vegan', '//span[@style and .="Vegan"]/following-sibling::text()', re=':(.+)')
         loader.add_value('url', response.url)
         return loader.load_item()
-        
+
 # END =========================================================================
