@@ -29,6 +29,6 @@ setup(
         'python-dateutil'
     ],
     extras_require={
-        'dev': ['flake8'],
+        'dev': ['pylint'],
     },
 )

@@ -49,5 +49,5 @@ clean-pyc: ## remove Python file artifacts
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
 
-lint: ## check style with flake8
-	flake8
+lint: ## check code with pylint
+	pylint pipeline
