@@ -21,7 +21,7 @@ class UltaProductsSpider(SitemapSpider):
 
     name = "ulta"
     allowed_domains = ['ulta.com']
-    sitemap_urls = ['http://www.ulta.com/robots.txt']
+    sitemap_urls = ['https://www.ulta.com/robots.txt']
     sitemap_follow = ['/detail[0-9]+.xml']
     sitemap_rules = [('product', 'parse_product')]
 
@@ -59,10 +59,9 @@ class UltaProductsSpider(SitemapSpider):
         product_loader.add_xpath('bestUses', '//div[@class="pr-snapshot-body"]//div[contains(@class, "pr-attribute-bestuses")]/div[@class="pr-attribute-value"]/ul/li')
         product_loader.add_value('url', response.url)
         product = product_loader.load_item()
-        product['reviews'] = []
 
         # Collect reviews if any, otherwise yield collected data
-        yield self.build_reviews_request(product)
+        return self.build_reviews_request(product)
 
     # -------------------------------------------------------------------------
 
@@ -72,6 +71,7 @@ class UltaProductsSpider(SitemapSpider):
         if response.status == 404:
             yield product
         else:
+            product['reviews'] = product.get('reviews') or []
             reviews_data = re.search('= (.+);', response.body).groups()[0]
             reviews_data = re.sub(r'\b0([0-9.]+)\b', '\\1', reviews_data)
             reviews_list = [each['r'] for each in demjson.decode(reviews_data)]
@@ -101,7 +101,7 @@ class UltaProductsSpider(SitemapSpider):
                 product['reviews'].append(review)
 
             # Collect more reviews if any
-            page = response.meta['page'] + 1
+            page = response.meta.get('page', 1) + 1
             yield self.build_reviews_request(product, page)
 
     # -------------------------------------------------------------------------
