@@ -19,7 +19,7 @@ class SokoglamProductsSpider(SitemapSpider):
     """Sokoglam Products Spider"""
 
     name = "sokoglam"
-    allowed_domains = ['sokoglam.com']
+    allowed_domains = ['sokoglam.com', 'yotpo.com']
     sitemap_urls = ['https://sokoglam.com/robots.txt']
     sitemap_rules = [('/products/', 'parse_product')]
     sitemap_follow = ['/sitemap_products']
@@ -54,8 +54,7 @@ class SokoglamProductsSpider(SitemapSpider):
         product_loader.add_xpath('availability', '//link[@itemprop="availability"]/@href')
         product_loader.add_value('description', record.get('description', None))
         product_loader.add_value('url', response.url)
-        product = product_loader.load_item()
-        product['reviews'] = []
+        product = product_loader.load_item()        
 
         appkey = response.xpath('//div[@data-appkey]/@data-appkey').extract_first()
         yield self.build_reviews_request(product, appkey)
@@ -64,17 +63,18 @@ class SokoglamProductsSpider(SitemapSpider):
 
     def parse_reviews(self, response):
         """Extract reviews data"""
-        product = response.meta['product']
+        product = response.meta.get('product') or {}
         data = json.loads(response.body)
         content = scrapy.Selector(text=data[0]['result'])
         reviews = content.xpath('//div[@data-review-id]')
         if reviews:
+            product['reviews'] = product.get('reviews') or []
             for each in reviews:
                 # Extract review information
                 review_loader = ReviewItemLoader(ReviewItem(), each)
                 review_loader.add_xpath('title', './/div[contains(@class, "content-title")]')
                 review_loader.add_xpath('description', './/div[contains(@class, "content-review")]')
-                review_loader.add_xpath('rating', 'count(.//span[@class="yotpo-review-stars"]/span[contains(@class, "yotpo-icon-star")])')
+                review_loader.add_xpath('rating', 'count(.//span[contains(@class, "yotpo-review-stars")]/span[contains(@class, "yotpo-icon-star")])')
                 review_loader.add_xpath('upvotes', './/label[@data-type="up"]')
                 review_loader.add_xpath('downvotes', './/label[@data-type="down"]')
                 review_loader.add_xpath('datePublished', './/label[contains(@class, "yotpo-review-date")]')
@@ -92,7 +92,7 @@ class SokoglamProductsSpider(SitemapSpider):
                 product['reviews'].append(review)
 
             appkey = response.meta['appkey']
-            page = response.meta['page'] + 1
+            page = response.meta.get('page', 1) + 1
             yield self.build_reviews_request(product, appkey, page)
         else:
             yield product
