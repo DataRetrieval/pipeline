@@ -26,7 +26,12 @@ class BeautylishProductsSpider(scrapy.Spider):
     # -------------------------------------------------------------------------
 
     def parse(self, response):
-        """Extract product links, follow them and go to next page if exists"""
+        """Extract product links, follow them and go to next page if exists
+        
+        @url https://www.beautylish.com/shop/browse
+        @returns requests 1
+        @returns items 0 0
+        """
         products = response.xpath('//a[@class="tile"]')
         for product in products:
             href = product.xpath('@href').extract_first()
@@ -41,7 +46,11 @@ class BeautylishProductsSpider(scrapy.Spider):
     # -------------------------------------------------------------------------
 
     def parse_product(self, response):
-        """Extract product details"""
+        """Extract product details
+        
+        @url https://www.beautylish.com/s/jeffree-star-cosmetics-holographic-makeup-bag-black
+        @returns requests 1 1
+        """
         encoded = response.xpath('//script').re_first('window.scriptCtx = "([^"]+)"')
         decoded = base64.b64decode(encoded)
         data = json.loads(decoded)
@@ -89,23 +98,8 @@ class BeautylishProductsSpider(scrapy.Spider):
         if reviews:
             product['reviews'] = product.get('reviews') or []
             for each in reviews:
-                # Extract review information
-                review_loader = ReviewItemLoader(ReviewItem())
-                review_loader.add_value('title', each['shortText'])
-                review_loader.add_value('description', each['text'])
-                review_loader.add_value('rating', each['rating'])
-                review_loader.add_value('helpfulCount', each['likesCount'])
-                review_loader.add_value('reviewImage', each['images'][0]['clUrl'] if each['images'] else None)
-                review_loader.add_value('datePublished', each['isoDate'])
-                review = review_loader.load_item()
-
-                # Extract reviewer information
-                reviewer_loader = ReviewerItemLoader(ReviewerItem())
-                reviewer_loader.add_value('name', each['userDisplayName'])
-                reviewer_loader.add_value('profileUrl', each['userUrl'])
-                reviewer = reviewer_loader.load_item()
-
-                review['reviewer'] = reviewer
+                review = self.extract_review(each)
+                review['reviewer'] = self.extract_reviewer(each)
                 product['reviews'].append(review)
 
             limit = response.meta.get('limit', 20)
@@ -136,5 +130,27 @@ class BeautylishProductsSpider(scrapy.Spider):
         }
         query = urllib.urlencode(params)
         return 'https://www.beautylish.com/rest/reviews/p-{cipherid}?{query}'.format(cipherid=cipherid, query=query)
+        
+    # -------------------------------------------------------------------------
+    
+    def extract_review(self, selector):
+        """Extract review"""
+        review_loader = ReviewItemLoader(ReviewItem())
+        review_loader.add_value('title', selector['shortText'])
+        review_loader.add_value('description', selector['text'])
+        review_loader.add_value('rating', selector['rating'])
+        review_loader.add_value('helpfulCount', selector['likesCount'])
+        review_loader.add_value('reviewImage', selector['images'][0]['clUrl'] if selector['images'] else None)
+        review_loader.add_value('datePublished', selector['isoDate'])
+        return review_loader.load_item()
 
+    # -------------------------------------------------------------------------
+    
+    def extract_reviewer(self, selector):
+        """Extract reviewer"""
+        reviewer_loader = ReviewerItemLoader(ReviewerItem())
+        reviewer_loader.add_value('name', selector['userDisplayName'])
+        reviewer_loader.add_value('profileUrl', selector['userUrl'])
+        return reviewer_loader.load_item()
+        
 # END =========================================================================
