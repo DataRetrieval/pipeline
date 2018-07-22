@@ -2,6 +2,8 @@
 
 TIMEZONE=UTC
 
+### PROXY #####################################################################
+
 HTTP_PROXY=http://privoxy:8118
 HTTPS_PROXY=http://privoxy:8118
 
@@ -66,3 +68,5 @@ TOR_NEW_CIRCUIT_PERIOD=120
 TOR_MAX_CIRCUIT_DIRTINESS=600
 TOR_CIRCUIT_BUILD_TIMEOUT=60
 TOR_HEALTHCHECK_TIMOUT=60
+
+### END ########################################################################
