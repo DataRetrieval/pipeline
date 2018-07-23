@@ -6,9 +6,10 @@
 
 import re
 import demjson
-import scrapy
 
+import scrapy
 from scrapy.spiders import SitemapSpider
+
 from pipeline.items.ulta import ProductItem, ReviewItem, ReviewerItem
 from pipeline.itemloaders.ulta import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
@@ -67,7 +68,7 @@ class UltaProductsSpider(SitemapSpider):
 
     def parse_reviews(self, response):
         """Extract product reviews"""
-        product = response.meta['product']
+        product = response.meta.get('product') or {}
         if response.status == 404:
             yield product
         else:
@@ -76,28 +77,8 @@ class UltaProductsSpider(SitemapSpider):
             reviews_data = re.sub(r'\b0([0-9.]+)\b', '\\1', reviews_data)
             reviews_list = [each['r'] for each in demjson.decode(reviews_data)]
             for each in reviews_list:
-                # Extract review information
-                review_loader = ReviewItemLoader(ReviewItem())
-                review_loader.add_value('title', each.get('h', None))
-                review_loader.add_value('description', each.get('p', None))
-                review_loader.add_value('rating', each.get('r', None))
-                review_loader.add_value('datePublished', each.get('db', None))
-                review_loader.add_value('pros', self.get_value(each.get('g', []), 'pros'))
-                review_loader.add_value('cons', self.get_value(each.get('g', []), 'cons'))
-                review_loader.add_value('bestUses', self.get_value(each.get('g', []), 'bestuses'))
-                review_loader.add_value('bottomLine', each.get('b', {}).get('k', None))
-                review = review_loader.load_item()
-
-                # Extract reviewer information
-                reviewer_loader = ReviewerItemLoader(ReviewerItem())
-                reviewer_loader.add_value('name', each.get('n', None))
-                reviewer_loader.add_value('skinType', self.get_value(each.get('g', []), 'skintype'))
-                reviewer_loader.add_value('bio', self.get_value(each.get('g', []), 'describeyourself'))
-                reviewer_loader.add_value('age', self.get_value(each.get('g', []), 'age'))
-                reviewer_loader.add_value('location', each['w'])
-                reviewer = reviewer_loader.load_item()
-
-                review['reviewer'] = reviewer
+                review = self.extract_review(each)
+                review['reviewer'] = self.extract_reviewer(each)
                 product['reviews'].append(review)
 
             # Collect more reviews if any
@@ -109,11 +90,12 @@ class UltaProductsSpider(SitemapSpider):
     def build_reviews_request(self, product, page=1):
         """Build request to collect reviews"""
         pid = product['id']
-        encoded_pid = self.encode_pid(pid)
-        url_format = 'http://www.ulta.com/reviewcenter/pwr/content/{encoded_pid}/{pid}-en_US-{page}-reviews.js'
-        url = url_format.format(encoded_pid=encoded_pid, pid=pid, page=page)
         return scrapy.Request(
-            url,
+            'http://www.ulta.com/reviewcenter/pwr/content/{encoded_pid}/{pid}-en_US-{page}-reviews.js'.format(
+                encoded_pid=self.encode_pid(pid),
+                pid=pid,
+                page=page
+            ),
             callback=self.parse_reviews,
             meta={
                 'product': product,
@@ -121,6 +103,33 @@ class UltaProductsSpider(SitemapSpider):
                 'handle_httpstatus_list': [404],
             }
         )
+
+    # -------------------------------------------------------------------------
+
+    def extract_review(self, data):
+        """Extract review information"""
+        review_loader = ReviewItemLoader(ReviewItem())
+        review_loader.add_value('title', data.get('h'))
+        review_loader.add_value('description', data.get('p'))
+        review_loader.add_value('rating', data.get('r'))
+        review_loader.add_value('datePublished', data.get('db'))
+        review_loader.add_value('pros', self.get_value(data.get('g', []), 'pros'))
+        review_loader.add_value('cons', self.get_value(data.get('g', []), 'cons'))
+        review_loader.add_value('bestUses', self.get_value(data.get('g', []), 'bestuses'))
+        review_loader.add_value('bottomLine', data.get('b', {}).get('k'))
+        return review_loader.load_item()
+
+    # -------------------------------------------------------------------------
+
+    def extract_reviewer(self, data):
+        """Extract reviewer details"""
+        reviewer_loader = ReviewerItemLoader(ReviewerItem())
+        reviewer_loader.add_value('name', data.get('n'))
+        reviewer_loader.add_value('skinType', self.get_value(data.get('g', []), 'skintype'))
+        reviewer_loader.add_value('bio', self.get_value(data.get('g', []), 'describeyourself'))
+        reviewer_loader.add_value('age', self.get_value(data.get('g', []), 'age'))
+        reviewer_loader.add_value('location', data.get('w'))
+        return reviewer_loader.load_item()
 
     # -------------------------------------------------------------------------
 
