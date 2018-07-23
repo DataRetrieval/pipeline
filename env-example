@@ -7,6 +7,8 @@ TIMEZONE=UTC
 HTTP_PROXY=http://privoxy:8118
 HTTPS_PROXY=http://privoxy:8118
 
+NO_PROXY=
+
 ### AWS #######################################################################
 
 AWS_ACCESS_KEY_ID=
