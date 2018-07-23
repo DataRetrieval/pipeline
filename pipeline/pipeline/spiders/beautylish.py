@@ -7,6 +7,7 @@
 import json
 import base64
 import urllib
+
 import scrapy
 
 from pipeline.items.beautylish import ProductItem, ReviewItem, ReviewerItem
@@ -27,7 +28,7 @@ class BeautylishProductsSpider(scrapy.Spider):
 
     def parse(self, response):
         """Extract product links, follow them and go to next page if exists
-        
+
         @url https://www.beautylish.com/shop/browse
         @returns requests 1
         @returns items 0 0
@@ -47,7 +48,7 @@ class BeautylishProductsSpider(scrapy.Spider):
 
     def parse_product(self, response):
         """Extract product details
-        
+
         @url https://www.beautylish.com/s/jeffree-star-cosmetics-holographic-makeup-bag-black
         @returns requests 1 1
         """
@@ -85,7 +86,7 @@ class BeautylishProductsSpider(scrapy.Spider):
                     'cipherid': cipherid,
                 }
             )
-            
+
         return product
 
     # -------------------------------------------------------------------------
@@ -95,29 +96,29 @@ class BeautylishProductsSpider(scrapy.Spider):
         product = response.meta['product']
         cipherid = response.meta['cipherid']
         reviews = json.loads(response.body)
-        if reviews:
-            product['reviews'] = product.get('reviews') or []
-            for each in reviews:
-                review = self.extract_review(each)
-                review['reviewer'] = self.extract_reviewer(each)
-                product['reviews'].append(review)
-
-            limit = response.meta.get('limit', 20)
-            offset = response.meta.get('offset', 0) + limit
-            sort = response.meta.get('sort', 'helpful')
-            yield scrapy.Request(
-                self.build_review_url(cipherid, offset, limit, sort),
-                callback=self.parse_reviews,
-                meta={
-                    'product': product,
-                    'cipherid': cipherid,
-                    'offset': offset,
-                    'limit': limit
-                }
-            )
-        else:
+        if not reviews:
             # No more reviews, yield the collected data
-            yield product
+            return product
+
+        product['reviews'] = product.get('reviews') or []
+        for each in reviews:
+            review = self.extract_review(each)
+            review['reviewer'] = self.extract_reviewer(each)
+            product['reviews'].append(review)
+
+        limit = response.meta.get('limit', 20)
+        offset = response.meta.get('offset', 0) + limit
+        sort = response.meta.get('sort', 'helpful')
+        return scrapy.Request(
+            self.build_review_url(cipherid, offset, limit, sort),
+            callback=self.parse_reviews,
+            meta={
+                'product': product,
+                'cipherid': cipherid,
+                'offset': offset,
+                'limit': limit
+            }
+        )
 
     # -------------------------------------------------------------------------
 
@@ -130,9 +131,9 @@ class BeautylishProductsSpider(scrapy.Spider):
         }
         query = urllib.urlencode(params)
         return 'https://www.beautylish.com/rest/reviews/p-{cipherid}?{query}'.format(cipherid=cipherid, query=query)
-        
+
     # -------------------------------------------------------------------------
-    
+
     def extract_review(self, selector):
         """Extract review"""
         review_loader = ReviewItemLoader(ReviewItem())
@@ -145,12 +146,12 @@ class BeautylishProductsSpider(scrapy.Spider):
         return review_loader.load_item()
 
     # -------------------------------------------------------------------------
-    
+
     def extract_reviewer(self, selector):
         """Extract reviewer"""
         reviewer_loader = ReviewerItemLoader(ReviewerItem())
         reviewer_loader.add_value('name', selector['userDisplayName'])
         reviewer_loader.add_value('profileUrl', selector['userUrl'])
         return reviewer_loader.load_item()
-        
+
 # END =========================================================================
