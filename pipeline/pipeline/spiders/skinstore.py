@@ -5,6 +5,7 @@
 # Imports =====================================================================
 
 from scrapy.spiders import SitemapSpider
+
 from pipeline.items.skinstore import ProductItem, ReviewItem, ReviewerItem
 from pipeline.itemloaders.skinstore import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
@@ -24,7 +25,7 @@ class SkinstoreProductsSpider(SitemapSpider):
 
     def parse_product(self, response):
         """Extract product details
-        
+
         @url https://www.skinstore.com/phyto-phytoplage-rehydrating-shampoo-hair-and-body-200ml/10935700.html
         @returns items 1 1
         @returns requests 0 0
@@ -65,7 +66,7 @@ class SkinstoreProductsSpider(SitemapSpider):
         return product
 
     # -------------------------------------------------------------------------
-    
+
     def extract_review(self, selector):
         """Extract review"""
         review_loader = ReviewItemLoader(ReviewItem(), selector)
@@ -76,13 +77,13 @@ class SkinstoreProductsSpider(SitemapSpider):
         review_loader.add_xpath('upVotes', './/li[contains(@class, "review-yes")]/span[@class="review-number"]', re='([0-9+])')
         review_loader.add_xpath('downVotes', './/li[contains(@class, "review-no")]/span[@class="review-number"]', re='([0-9+])')
         return review_loader.load_item()
-        
+
     # -------------------------------------------------------------------------
-    
+
     def extract_reviewer(self, selector):
         """Extract reviewer"""
         reviewer_loader = ReviewerItemLoader(ReviewerItem(), selector)
         reviewer_loader.add_xpath('username', './/span[@itemprop="author"]')
         return reviewer_loader.load_item()
-            
+
 # END =========================================================================
