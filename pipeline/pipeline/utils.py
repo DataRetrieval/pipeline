@@ -5,7 +5,6 @@
 # Imports =====================================================================
 
 import re
-import datetime
 
 import six
 import dateutil.parser
@@ -45,9 +44,9 @@ def parse_float(text):
     """Parse float numbers"""
     if not isinstance(text, six.string_types):
         return text
-        
+
     try:
-        text = re.sub('[\s,]*', '', text)
+        text = re.sub(r'[\s,]*', '', text)
         return [
             float(match)
             for match in extract_regex(FLOAT_REGEX, text)
@@ -61,9 +60,9 @@ def parse_int(text):
     """Parse integer numbers"""
     if not isinstance(text, six.string_types):
         return text
-        
+
     try:
-        text = re.sub('[\s,]*', '', text)
+        text = re.sub(r'[\s,]*', '', text)
         return [
             int(match)
             for match in extract_regex(INT_REGEX, text)
