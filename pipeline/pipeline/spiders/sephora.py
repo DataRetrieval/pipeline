@@ -5,9 +5,10 @@
 # Imports =====================================================================
 
 import json
-import scrapy
 
+import scrapy
 from scrapy.spiders import SitemapSpider
+
 from pipeline.items.sephora import ProductItem, ReviewItem, ReviewerItem
 from pipeline.itemloaders.sephora import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
@@ -38,8 +39,8 @@ class SephoraProductsSpider(SitemapSpider):
             product_loader.add_xpath('loveCount', '//span[@seph-love-count]/@seph-love-count')
             product_loader.add_xpath('reviewCount', '//a[@href="#pdp-reviews"]/span[@class="u-linkComplexTarget"]', re='([0-9]+)')
             product_loader.add_value('rating', record['primary_product']['rating'])
-            product_loader.add_value('listPrice', record.get('list_price', None))
-            product_loader.add_value('valuePrice', record.get('value_price', None))
+            product_loader.add_value('listPrice', record.get('list_price'))
+            product_loader.add_value('valuePrice', record.get('value_price'))
             product_loader.add_value('size', record['sku_size'])
             product_loader.add_xpath('image', '//meta[@property="og:image"]/@content')
             product_loader.add_xpath('use', '//div[@id="use"]')
@@ -53,7 +54,7 @@ class SephoraProductsSpider(SitemapSpider):
             product = product_loader.load_item()
 
             reviews_url = response.xpath('//iframe[contains(@src, "reviews.htm")]/@src').re_first('([^?]+)')
-            yield scrapy.Request(
+            return scrapy.Request(
                 '{url}?format=embedded'.format(url=reviews_url),
                 callback=self.parse_reviews,
                 meta={'product': product}
@@ -63,39 +64,48 @@ class SephoraProductsSpider(SitemapSpider):
 
     def parse_reviews(self, response):
         """Extract reviews"""
-        product = response.meta['product']
+        product = response.meta.get('product') or {}
         product['reviews'] = product['reviews'] or []
         reviews_list = response.xpath('//span[@itemprop="review"]')
         for each in reviews_list:
-            # Extract review information
-            review_loader = ReviewItemLoader(ReviewItem(), each)
-            review_loader.add_xpath('title', './/span[@itemprop="name"]')
-            review_loader.add_xpath('quickTake', './/span[@class="BVRRTag"]')
-            review_loader.add_xpath('description', './/div[@itemprop="description"]')
-            review_loader.add_xpath('rating', './/span[@itemprop="ratingValue"]')
-            review_loader.add_xpath('publishedAt', './/meta[@itemprop="datePublished"]/@content')
-            review = review_loader.load_item()
-
-            # Extract reviewer information
-            reviewer_loader = ReviewerItemLoader(ReviewerItem(), each)
-            reviewer_loader.add_xpath('name', './/span[@itemprop="author"]')
-            reviewer_loader.add_xpath('skinType', './/span[contains(@class, "BVRRContextDataValueskinType") and contains(@class, "BVRRValue")]')
-            reviewer_loader.add_xpath('skinTone', './/span[contains(@class, "BVRRContextDataValueskinTone") and contains(@class, "BVRRValue")]')
-            reviewer_loader.add_xpath('eyeColor', './/span[contains(@class, "BVRRContextDataValueeyeColor") and contains(@class, "BVRRValue")]')
-            reviewer_loader.add_xpath('age', './/span[contains(@class, "BVRRContextDataValueage") and contains(@class, "BVRRValue")]')
-            reviewer_loader.add_xpath('location', './/span[contains(@class, "BVRRUserLocation") and contains(@class, "BVRRValue")]')
-            reviewer_loader.add_xpath('badge', './/div[contains(@class, "BVRRReviewBadgeGraphic")]/@class', re='BVRRBadgeGraphic BVRRReviewBadgeGraphic BVRR(.+)Graphic')
-            reviewer = reviewer_loader.load_item()
-
-            review['reviewer'] = reviewer
+            review = self.extract_review(each)
+            review['reviewer'] = self.extract_reviewer(each)
             product['reviews'].append(review)
 
         next_page = response.xpath('//a[@name="BV_TrackingTag_Review_Display_NextPage"]')
         if next_page:
-            href = next_page.xpath('@href').extract_first()
-            url = response.urljoin(href)
-            yield scrapy.Request(url, callback=self.parse_reviews, meta={'product': product})
-        else:
-            yield product
+            return response.follow(
+                next_page.xpath('@href').extract_first(),
+                callback=self.parse_reviews,
+                meta={'product': product}
+            )
+
+        return product
+
+    # -------------------------------------------------------------------------
+
+    def extract_review(self, data):
+        """Extract review information"""
+        review_loader = ReviewItemLoader(ReviewItem(), data)
+        review_loader.add_xpath('title', './/span[@itemprop="name"]')
+        review_loader.add_xpath('quickTake', './/span[@class="BVRRTag"]')
+        review_loader.add_xpath('description', './/div[@itemprop="description"]')
+        review_loader.add_xpath('rating', './/span[@itemprop="ratingValue"]')
+        review_loader.add_xpath('publishedAt', './/meta[@itemprop="datePublished"]/@content')
+        return review_loader.load_item()
+
+    # -------------------------------------------------------------------------
+
+    def extract_reviewer(self, data):
+        """Extract reviewer information"""
+        reviewer_loader = ReviewerItemLoader(ReviewerItem(), data)
+        reviewer_loader.add_xpath('name', './/span[@itemprop="author"]')
+        reviewer_loader.add_xpath('skinType', './/span[contains(@class, "BVRRContextDataValueskinType") and contains(@class, "BVRRValue")]')
+        reviewer_loader.add_xpath('skinTone', './/span[contains(@class, "BVRRContextDataValueskinTone") and contains(@class, "BVRRValue")]')
+        reviewer_loader.add_xpath('eyeColor', './/span[contains(@class, "BVRRContextDataValueeyeColor") and contains(@class, "BVRRValue")]')
+        reviewer_loader.add_xpath('age', './/span[contains(@class, "BVRRContextDataValueage") and contains(@class, "BVRRValue")]')
+        reviewer_loader.add_xpath('location', './/span[contains(@class, "BVRRUserLocation") and contains(@class, "BVRRValue")]')
+        reviewer_loader.add_xpath('badge', './/div[contains(@class, "BVRRReviewBadgeGraphic")]/@class', re='BVRRBadgeGraphic BVRRReviewBadgeGraphic BVRR(.+)Graphic')
+        return reviewer_loader.load_item()
 
 # END =========================================================================
