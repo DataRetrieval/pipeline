@@ -5,6 +5,7 @@
 # Imports =====================================================================
 
 import re
+import datetime
 
 import six
 import dateutil.parser
@@ -31,10 +32,13 @@ def clean_text(text):
 
 # -----------------------------------------------------------------------------
 
-def parse_date(text):
+def parse_date(value):
     """Parse dates from a string into a datetime object"""
+    if isinstance(value, datetime.datetime):
+        return value
+        
     try:
-        return dateutil.parser.parse(text)
+        return dateutil.parser.parse(value)
     except ValueError:
         return None
 
