@@ -36,11 +36,15 @@ class GlossierProductsSpider(CrawlSpider):
     # -------------------------------------------------------------------------
 
     def parse_product(self, response):
-        """Extract product details"""
+        """Extract product details
+
+        @url https://www.glossier.com/products/milky-jelly-cleanser
+        @returns requests 1 1
+        """
         details = response.xpath(
             '//add-to-bag[@product]/@product').extract_first()
         if not details:
-            return
+            return None
         data = json.loads(details)
 
         product_loader = ProductItemLoader(ProductItem(), response)
@@ -114,14 +118,14 @@ class GlossierProductsSpider(CrawlSpider):
         product_loader.add_value('url', response.url)
         product = product_loader.load_item()
 
-        yield self.build_reviews_request(response, product)
+        return self.build_reviews_request(response, product)
 
     # -------------------------------------------------------------------------
 
     def parse_reviews(self, response):
         """Extract reviews"""
-        api_key = response.meta['api_key']
-        product = response.meta['product']
+        api_key = response.meta.get('api_key')
+        product = response.meta.get('product') or {}
         product['reviews'] = product.get('reviews') or []
 
         data = json.loads(response.body)
@@ -129,51 +133,11 @@ class GlossierProductsSpider(CrawlSpider):
             return product
 
         for each in data['results'][0]['reviews']:
-            review_loader = ReviewItemLoader(ReviewItem())
-            review_loader.add_value('comments', each['details']['comments'])
-            review_loader.add_value('headline', each['details']['headline'])
-            review_loader.add_value('rating', each['metrics']['rating'])
-            review_loader.add_value(
-                'datePublished',
-                datetime.datetime.fromtimestamp(
-                    each['details']['created_date'] / 1000
-                )
-            )
-            review_loader.add_value(
-                'dateUpdated',
-                datetime.datetime.fromtimestamp(
-                    each['details']['updated_date'] / 1000
-                )
-            )
-            review_loader.add_value(
-                'helpful_score', each['metrics']['helpful_score']
-            )
-            review_loader.add_value(
-                'helpful_votes', each['metrics']['helpful_votes']
-            )
-            review_loader.add_value(
-                'not_helpful_votes', each['metrics']['not_helpful_votes']
-            )
-            review = review_loader.load_item()
-
-            reviewer_loader = ReviewerItemLoader(ReviewerItem())
-            reviewer_loader.add_value('nickname', each['details']['nickname'])
-            reviewer_loader.add_value('location', each['details']['location'])
-            reviewer_loader.add_value(
-                'verified_buyer', each['badges']['is_verified_buyer']
-            )
-            reviewer_loader.add_value(
-                'staff_reviewer', each['badges']['is_staff_reviewer']
-            )
-            reviewer_loader.add_value(
-                'verified_reviewer', each['badges']['is_verified_reviewer']
-            )
-            reviewer = reviewer_loader.load_item()
-
-            review['reviewer'] = reviewer
+            review = self.extract_review(each)
+            review['reviewer'] = self.extract_reviewer(each)
             product['reviews'].append(review)
 
-        if data['paging'].get('next_page_url'):
+        if api_key and data['paging'].get('next_page_url'):
             return response.follow(
                 data['paging']['next_page_url'],
                 headers={'Authorization': api_key, 'Referer': product['url']},
@@ -208,5 +172,54 @@ class GlossierProductsSpider(CrawlSpider):
             },
             callback=self.parse_reviews
         )
+
+    # -------------------------------------------------------------------------
+
+    def extract_review(self, data):
+        """Extract review information"""
+        review_loader = ReviewItemLoader(ReviewItem())
+        review_loader.add_value('comments', data['details']['comments'])
+        review_loader.add_value('headline', data['details']['headline'])
+        review_loader.add_value('rating', data['metrics']['rating'])
+        review_loader.add_value(
+            'datePublished',
+            datetime.datetime.fromtimestamp(
+                data['details']['created_date'] / 1000
+            )
+        )
+        review_loader.add_value(
+            'dateUpdated',
+            datetime.datetime.fromtimestamp(
+                data['details']['updated_date'] / 1000
+            )
+        )
+        review_loader.add_value(
+            'helpful_score', data['metrics']['helpful_score']
+        )
+        review_loader.add_value(
+            'helpful_votes', data['metrics']['helpful_votes']
+        )
+        review_loader.add_value(
+            'not_helpful_votes', data['metrics']['not_helpful_votes']
+        )
+        return review_loader.load_item()
+
+    # -------------------------------------------------------------------------
+
+    def extract_reviewer(self, data):
+        """Extract reviewer information"""
+        reviewer_loader = ReviewerItemLoader(ReviewerItem())
+        reviewer_loader.add_value('nickname', data['details']['nickname'])
+        reviewer_loader.add_value('location', data['details']['location'])
+        reviewer_loader.add_value(
+            'verified_buyer', data['badges']['is_verified_buyer']
+        )
+        reviewer_loader.add_value(
+            'staff_reviewer', data['badges']['is_staff_reviewer']
+        )
+        reviewer_loader.add_value(
+            'verified_reviewer', data['badges']['is_verified_reviewer']
+        )
+        return reviewer_loader.load_item()
 
 # END =========================================================================
