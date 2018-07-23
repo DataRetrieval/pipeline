@@ -4,7 +4,6 @@
 
 # Imports =====================================================================
 
-import scrapy
 from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
@@ -53,7 +52,11 @@ class EssentialNaturalOilsProductsSpider(CrawlSpider):
     # -------------------------------------------------------------------------
 
     def parse_product(self, response):
-        """Extract product details"""
+        """Extract product details
+
+        @url https://www.essentialnaturaloils.com/natural-essential-oils/silver-fir-needle-essential-oil-abies-alba-oil
+        @returns requests 1 1
+        """
         loader = ProductItemLoader(ProductItem(), response)
         loader.add_xpath('id', '//input[@name="product_id"]/@value')
         loader.add_css('name', '.title-product')
@@ -70,12 +73,8 @@ class EssentialNaturalOilsProductsSpider(CrawlSpider):
         product = loader.load_item()
 
         if product['reviews_count'] > 0:
-            reviews_url = response.urljoin(
-                '/index.php?route=product/product/review&product_id={product_id}'
-                .format(product_id=product['id'])
-            )
-            return scrapy.Request(
-                reviews_url,
+            return response.follow(
+                '/index.php?route=product/product/review&product_id={product_id}'.format(product_id=product['id']),
                 callback=self.parse_reviews,
                 meta=dict(product=product)
             )
@@ -85,8 +84,13 @@ class EssentialNaturalOilsProductsSpider(CrawlSpider):
     # -------------------------------------------------------------------------
 
     def parse_reviews(self, response):
-        """Extract product reviews"""
-        product = response.meta['product']
+        """Extract product reviews
+
+        @url https://www.essentialnaturaloils.com/index.php?route=product/product/review&product_id=177
+        @returns items 1 1
+        @scrapes reviews
+        """
+        product = response.meta.get('product') or {}
         product['reviews'] = []
 
         for review in response.css('.table'):
