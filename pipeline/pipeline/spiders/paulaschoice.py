@@ -6,9 +6,10 @@
 
 import re
 import demjson
-import scrapy
 
+import scrapy
 from scrapy.spiders import SitemapSpider
+
 from pipeline.items.paulaschoice import ProductItem, ReviewItem, ReviewerItem
 from pipeline.itemloaders.paulaschoice import (
     ProductItemLoader, ReviewItemLoader, ReviewerItemLoader
@@ -27,7 +28,11 @@ class PaulasChoiceProductsSpider(SitemapSpider):
     # -------------------------------------------------------------------------
 
     def parse_product(self, response):
-        """Extract product details"""
+        """Extract product details
+
+        @url https://www.paulaschoice.com/daily-replenishing-body-cream/345.html?cgid=category-body-care
+        @returns requests 1 1
+        """
         product_loader = ProductItemLoader(ProductItem(), response)
         product_loader.add_xpath('sku', '//input[@id="pid"]/@value')
         product_loader.add_xpath('name', '//h1[@itemprop="name"]')
@@ -56,46 +61,29 @@ class PaulasChoiceProductsSpider(SitemapSpider):
         product['reviews'] = []
 
         # Collect reviews if any, otherwise yield collected data
-        yield product if not product['reviewCount'] else self.build_reviews_request(product)
+        if not product['reviewCount']:
+            return product
+
+        return self.build_reviews_request(product)
 
     # -------------------------------------------------------------------------
 
     def parse_reviews(self, response):
         """Extract product reviews"""
-        product = response.meta['product']
+        product = response.meta.get('product') or {}
         reviews_data = re.search('= (.+);', response.body).groups()[0]
         reviews_list = [each['r'] for each in demjson.decode(reviews_data)]
         for each in reviews_list:
-            # Extract review information
-            review_loader = ReviewItemLoader(ReviewItem())
-            review_loader.add_value('title', each.get('h', None))
-            review_loader.add_value('description', each.get('p', None))
-            review_loader.add_value('rating', each.get('r', None))
-            review_loader.add_value('datePublished', each.get('db', None))
-            review_loader.add_value('pros', self.get_value(each.get('g', []), 'pros'))
-            review_loader.add_value('cons', self.get_value(each.get('g', []), 'cons'))
-            review_loader.add_value('bestUses', self.get_value(each.get('g', []), 'bestuses'))
-            review_loader.add_value('bottomLine', each.get('b', {}).get('k', None))
-            review = review_loader.load_item()
-
-            # Extract reviewer information
-            reviewer_loader = ReviewerItemLoader(ReviewerItem())
-            reviewer_loader.add_value('name', each.get('n', None))
-            reviewer_loader.add_value('skinType', self.get_value(each.get('g', []), 'skintype'))
-            reviewer_loader.add_value('bio', self.get_value(each.get('g', []), 'describeyourself'))
-            reviewer_loader.add_value('age', self.get_value(each.get('g', []), 'age'))
-            reviewer_loader.add_value('location', each['w'])
-            reviewer = reviewer_loader.load_item()
-
-            review['reviewer'] = reviewer
+            review = self.extract_review(each)
+            review['reviewer'] = self.extract_reviewer(each)
             product['reviews'].append(review)
 
         # Collect more reviews if any
         if len(product['reviews']) < product['reviewCount']:
             page = response.meta['page'] + 1
-            yield self.build_reviews_request(product, page)
-        else:
-            yield product
+            return self.build_reviews_request(product, page)
+
+        return product
 
     # -------------------------------------------------------------------------
 
@@ -113,6 +101,33 @@ class PaulasChoiceProductsSpider(SitemapSpider):
                 'page': page
             }
         )
+
+    # -------------------------------------------------------------------------
+
+    def extract_review(self, data):
+        """Extract review information"""
+        review_loader = ReviewItemLoader(ReviewItem())
+        review_loader.add_value('title', data.get('h'))
+        review_loader.add_value('description', data.get('p'))
+        review_loader.add_value('rating', data.get('r'))
+        review_loader.add_value('datePublished', data.get('db'))
+        review_loader.add_value('pros', self.get_value(data.get('g', []), 'pros'))
+        review_loader.add_value('cons', self.get_value(data.get('g', []), 'cons'))
+        review_loader.add_value('bestUses', self.get_value(data.get('g', []), 'bestuses'))
+        review_loader.add_value('bottomLine', data.get('b', {}).get('k'))
+        return review_loader.load_item()
+
+    # -------------------------------------------------------------------------
+
+    def extract_reviewer(self, data):
+        """Extract reviewer information"""
+        reviewer_loader = ReviewerItemLoader(ReviewerItem())
+        reviewer_loader.add_value('name', data.get('n'))
+        reviewer_loader.add_value('skinType', self.get_value(data.get('g', []), 'skintype'))
+        reviewer_loader.add_value('bio', self.get_value(data.get('g', []), 'describeyourself'))
+        reviewer_loader.add_value('age', self.get_value(data.get('g', []), 'age'))
+        reviewer_loader.add_value('location', data.get('w'))
+        return reviewer_loader.load_item()
 
     # -------------------------------------------------------------------------
 
